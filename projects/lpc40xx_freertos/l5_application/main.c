@@ -437,19 +437,20 @@ void ssp2lab(){
 // clang-format on
 // UART
 void uart_read_task(void *p) {
-  char *data;
+
   while (1) {
-    uart_lab__polled_get(UART_3, data);
-    fprintf(stderr, "Received %c\n", *data);
+    char data;
+    uart_lab__polled_get(UART_3, &data);
+    fprintf(stderr, "Received %c\n", data);
     vTaskDelay(500);
   }
 }
 
 void uart_write_task(void *p) {
   while (1) {
-    char data = 'A';
-    uart_lab__polled_get(UART_3, data);
-    fprintf(stderr, "Sent %c\n", data);
+    // char data = 'A';
+    uart_lab__polled_put(UART_3, 'A');
+    // fprintf(stderr, "Sent %c\n", data);
     vTaskDelay(500);
   }
 }
@@ -459,7 +460,7 @@ void uart_write_task(void *p) {
 void main(void) {
   // TODO: Use uart_lab__init() function and initialize UART2 or UART3 (your choice)
   // TODO: Pin Configure IO pins to perform UART2/UART3 function
-  uart_lab__init(UART_3, 96, 9600);
+  uart_lab__init(UART_3, 96, 115200);
   gpio__construct_with_function(4, 28, GPIO__FUNCTION_2);
   gpio__construct_with_function(4, 29, GPIO__FUNCTION_2);
 

@@ -32,14 +32,15 @@ bool uart_lab__polled_get(uart_number_e uart, char *input_byte) {
   // b) Copy data from RBR register to input_byte
   if (uart == 2) {
     LPC_UART2->LCR &= ~(1 << 7); // Dlab reset
-    while (!LPC_UART2->LSR & 1 << 0)
+    while (!(LPC_UART2->LSR & 1 << 0))
       ; // While LSR's RDR is not set, wait until it is set (Ready)
     *input_byte = LPC_UART2->RBR;
     return true;
   } else if (uart == 3) {
     LPC_UART3->LCR &= ~(1 << 7); // Dlab reset
-    while (!LPC_UART2->LSR & 1 << 0)
-      ; // While LSR's RDR is not set, wait until it is set (Ready)
+    while (!(LPC_UART2->LSR & 1 << 0)) {
+      ;
+    } // While LSR's RDR is not set, wait until it is set (Ready)
     *input_byte = LPC_UART2->RBR;
     return true;
   }
