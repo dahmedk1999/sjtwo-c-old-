@@ -463,8 +463,8 @@ void main(void) {
   gpio__construct_with_function(4, 28, GPIO__FUNCTION_2);
   gpio__construct_with_function(4, 29, GPIO__FUNCTION_2);
 
-  xTaskCreate(uart_write_task, "Ux3Read", 2048 / sizeof(void *), NULL, 2, NULL);
-  xTaskCreate(uart_read_task, "Ux3Write", 2048 / sizeof(void *), NULL, 2, NULL);
+  xTaskCreate(uart_write_task, "Ux3Write", 2048 / sizeof(void *), NULL, 2, NULL);
+  xTaskCreate(uart_read_task, "Ux3Read", 2048 / sizeof(void *), NULL, 2, NULL);
 
   vTaskStartScheduler();
 }
