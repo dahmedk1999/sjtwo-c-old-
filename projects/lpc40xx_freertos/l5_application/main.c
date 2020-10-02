@@ -376,8 +376,9 @@ void page_write(uint32_t address, uint8_t *data) {
   for (int i = 0; i < 25; i++) {
     ssp2__exch_byte(data++);
   }
-  write_disable();
+  
   adesto_ds();
+  write_disable();
 }
 void page_read(uint32_t address, uint8_t *data) {
   adesto_cs();           // Chip enable
@@ -436,22 +437,25 @@ void ssp2lab(){
 // clang-format on
 // UART
 void uart_read_task(void *p) {
+  char *data;
   while (1) {
-    uint8_t *data;
     uart_lab__polled_get(UART_3, data);
+    fprintf(stderr, "Received %c\n", *data);
     vTaskDelay(500);
   }
 }
 
 void uart_write_task(void *p) {
   while (1) {
-    uint8_t data = 'A';
+    char data = 'A';
     uart_lab__polled_get(UART_3, data);
+    fprintf(stderr, "Sent %c\n", data);
     vTaskDelay(500);
   }
 }
 
 /////////////////////////// MAIN ///////////////////////////
+
 void main(void) {
   // TODO: Use uart_lab__init() function and initialize UART2 or UART3 (your choice)
   // TODO: Pin Configure IO pins to perform UART2/UART3 function
@@ -459,8 +463,8 @@ void main(void) {
   gpio__construct_with_function(4, 28, GPIO__FUNCTION_2);
   gpio__construct_with_function(4, 29, GPIO__FUNCTION_2);
 
-  xTaskCreate(uart_read_task, "Ux3Read", 2048 / sizeof(void *), NULL, 2, NULL);
-  xTaskCreate(uart_write_task, "Ux3Write", 2048 / sizeof(void *), NULL, 2, NULL);
+  xTaskCreate(uart_write_task, "Ux3Read", 2048 / sizeof(void *), NULL, 2, NULL);
+  xTaskCreate(uart_read_task, "Ux3Write", 2048 / sizeof(void *), NULL, 2, NULL);
 
   vTaskStartScheduler();
 }
