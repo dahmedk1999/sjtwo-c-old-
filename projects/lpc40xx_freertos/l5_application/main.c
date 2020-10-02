@@ -20,6 +20,7 @@
 #include "queue.h"
 #include "semphr.h"
 #include "ssp2lab.h"
+#include "uart_lab.h"
 
 uint8_t GPIOPORTs[] = {1, 1, 1, 2};
 uint8_t GPIOLEDs[] = {18, 24, 26, 3};
@@ -336,7 +337,6 @@ typedef struct page {
   uint8_t byte[256];
   uint32_t address;
 } page;
-
 void adesto_flash_send_address(uint32_t address) {
   (void)ssp2__exchange_byte((address >> 16) & 0xFF);
   (void)ssp2__exchange_byte((address >> 8) & 0xFF);
@@ -367,7 +367,6 @@ void page_erase(uint8_t address) {
   ssp2__exch_byte(0xFF);
   adesto_ds();
 }
-
 void page_write(uint32_t address, uint8_t *data) {
 
   write_enable();
@@ -390,7 +389,6 @@ void page_read(uint32_t address, uint8_t *data) {
   adesto_ds();
 }
 page pageofdata;
-
 void pagewriteandread(void *p) {
   unblock_mem();
   while (1) {
@@ -434,9 +432,36 @@ void ssp2lab(){
   vTaskStartScheduler();
   
 }
+
 // clang-format on
+// UART
+void uart_read_task(void *p) {
+  while (1) {
+    uint8_t *data;
+    uart_lab__polled_get(UART_3, data);
+    vTaskDelay(500);
+  }
+}
+
+void uart_write_task(void *p) {
+  while (1) {
+    uint8_t data = 'A';
+    uart_lab__polled_get(UART_3, data);
+    vTaskDelay(500);
+  }
+}
 
 /////////////////////////// MAIN ///////////////////////////
+void main(void) {
+  // TODO: Use uart_lab__init() function and initialize UART2 or UART3 (your choice)
+  // TODO: Pin Configure IO pins to perform UART2/UART3 function
+  uart_lab__init(UART_3, 96, 9600);
+  gpio__construct_with_function(4, 28, GPIO__FUNCTION_2);
+  gpio__construct_with_function(4, 29, GPIO__FUNCTION_2);
 
-int main(void) {}
+  xTaskCreate(uart_read_task, "Ux3Read", 2048 / sizeof(void *), NULL, 2, NULL);
+  xTaskCreate(uart_write_task, "Ux3Write", 2048 / sizeof(void *), NULL, 2, NULL);
+
+  vTaskStartScheduler();
+}
 //////////////////////////END MAIN/////////////////////////
