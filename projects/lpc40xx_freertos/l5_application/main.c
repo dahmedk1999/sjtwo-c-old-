@@ -441,7 +441,7 @@ void uart_read_task(void *p) {
   while (1) {
     char *data;
     uart_lab__polled_get(UART_3, &data);
-    fprintf(stderr, "Received %c \n", data);
+    fprintf(stderr, "%c", data);
     vTaskDelay(500);
   }
 }
@@ -466,12 +466,12 @@ void uart_write_task(void *p) {
 void main(void) {
   // TODO: Use uart_lab__init() function and initialize UART2 or UART3 (your choice)
   // TODO: Pin Configure IO pins to perform UART2/UART3 function
-  uart_lab__init(UART_3, 96, 115200);
+  uart_lab__init(UART_3, 96, 9600);
   gpio__construct_with_function(4, 28, GPIO__FUNCTION_2);
   gpio__construct_with_function(4, 29, GPIO__FUNCTION_2);
 
-  xTaskCreate(uart_write_task, "Ux3Write", 2048 / sizeof(void *), NULL, 2, NULL);
-  xTaskCreate(uart_read_task, "Ux3Read", 2048 / sizeof(void *), NULL, 2, NULL);
+  xTaskCreate(uart_write_task, "Ux3Write", 2048 / sizeof(void *), NULL, 3, NULL);
+  xTaskCreate(uart_read_task, "Ux3Read", 2048 / sizeof(void *), NULL, 3, NULL);
 
   vTaskStartScheduler();
 }
