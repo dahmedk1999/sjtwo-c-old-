@@ -441,15 +441,21 @@ void uart_read_task(void *p) {
   while (1) {
     char *data;
     uart_lab__polled_get(UART_3, &data);
-    fprintf(stderr, "Received %c\n", data);
+    fprintf(stderr, "Received %c \n", data);
     vTaskDelay(500);
   }
 }
 
 void uart_write_task(void *p) {
   while (1) {
-    // char data = 'A';
-    uart_lab__polled_put(UART_3, 'B');
+    uart_lab__polled_put(UART_3, 'W');
+    uart_lab__polled_put(UART_3, 'O');
+    uart_lab__polled_put(UART_3, 'R');
+    uart_lab__polled_put(UART_3, 'K');
+    uart_lab__polled_put(UART_3, 'p');
+    uart_lab__polled_put(UART_3, 'l');
+    uart_lab__polled_put(UART_3, 's');
+    uart_lab__polled_put(UART_3, '\n');
     // fprintf(stderr, "Sent %c\n", data);
     vTaskDelay(500);
   }
