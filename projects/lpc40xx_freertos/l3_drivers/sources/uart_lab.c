@@ -73,14 +73,15 @@ bool uart_lab__polled_put(uart_number_e uart, char output_byte) {
     while (!(LPC_UART2->LSR & (1 << 5))) {
     }
     return true;
+
   } else if (uart == UART_3) {
 
     LPC_UART3->LCR &= ~(1 << 7);
-    while (!(LPC_UART3->LSR & (1 << 5)))
-      ;                           // THR is 0 | contains valid data. 1 when empty.
+    while (!(LPC_UART3->LSR & (1 << 5))) {
+    }                             // THR is 0 | contains valid data. 1 when empty.
     LPC_UART3->THR = output_byte; // Send data when THR is empty
-    while (!(LPC_UART3->LSR & (1 << 5)))
-      ;
+    while (!(LPC_UART3->LSR & (1 << 5))) {
+    }
     return true;
   }
 }
