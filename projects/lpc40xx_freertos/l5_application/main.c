@@ -457,7 +457,7 @@ void uart_write_task(void *p) {
     uart_lab__polled_put(UART_3, 's');
     uart_lab__polled_put(UART_3, '\n');
     // fprintf(stderr, "Sent %c\n", data);
-    vTaskDelay(500);
+    vTaskDelay(50);
   }
 }
 
