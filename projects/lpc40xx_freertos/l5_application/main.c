@@ -439,7 +439,7 @@ void ssp2lab(){
 void uart_read_task(void *p) {
 
   while (1) {
-    char data;
+    char *data;
     uart_lab__polled_get(UART_3, &data);
     fprintf(stderr, "Received %c\n", data);
     vTaskDelay(500);
@@ -449,7 +449,7 @@ void uart_read_task(void *p) {
 void uart_write_task(void *p) {
   while (1) {
     // char data = 'A';
-    uart_lab__polled_put(UART_3, 'A');
+    uart_lab__polled_put(UART_3, 'B');
     // fprintf(stderr, "Sent %c\n", data);
     vTaskDelay(500);
   }

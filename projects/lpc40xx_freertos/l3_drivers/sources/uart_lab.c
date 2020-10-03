@@ -10,19 +10,23 @@ void uart_lab__init(uart_number_e uart, uint32_t peripheral_clock, uint32_t baud
   // b) Setup DLL, DLM, FDR, LCR registers
   if (uart == 2) {
     lpc_peripheral__turn_on_power_to(LPC_PERIPHERAL__UART2);
-    const uint16_t divider16bit = 96 * 1000 * 1000 / (16 * baud_rate);
+    const uint16_t divider16bit = peripheral_clock * 1000 * 1000 / (16 * baud_rate);
     const uint8_t dlab = (1 << 7);
+    LPC_UART3->LCR |= 3 << 0;
+    LPC_UART2->FCR = 1 << 0;
     LPC_UART2->LCR |= dlab; // Open control
     LPC_UART2->DLM = (divider16bit >> 8 & 0xFF);
-    LPC_UART2->DLL = (divider16bit & 0xFF);
+    LPC_UART2->DLL = (divider16bit >> 0 & 0xFF);
     LPC_UART2->LCR &= ~dlab; // Disable control
   } else if (uart == 3) {
     lpc_peripheral__turn_on_power_to(LPC_PERIPHERAL__UART3);
-    const uint16_t divider16bit = 96 * 1000 * 1000 / (16 * baud_rate);
+    const uint16_t divider16bit = peripheral_clock * 1000 * 1000 / (16 * baud_rate);
     const uint8_t dlab = (1 << 7);
+    LPC_UART3->LCR |= 3 << 0;
+    LPC_UART3->FCR = 1 << 0;
     LPC_UART3->LCR |= dlab; // Open control
     LPC_UART3->DLM = (divider16bit >> 8 & 0xFF);
-    LPC_UART3->DLL = (divider16bit & 0xFF);
+    LPC_UART3->DLL = (divider16bit >> 0 & 0xFF);
     LPC_UART3->LCR &= ~dlab; // Disable control
   }
 }
