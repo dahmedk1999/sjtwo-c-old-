@@ -40,7 +40,7 @@ void uart_lab__init(uart_number_e uart, uint32_t peripheral_clock, uint32_t baud
     LPC_UART3->DLM = ((divider16bit >> 8) & 0xFF);
     LPC_UART3->DLL = ((divider16bit >> 0) & 0xFF);
     // LPC_UART3->LCR &= ~dlab; // Disable control
-    // fprintf(stderr, "\n...UART 3 Ready\n");
+    fprintf(stderr, "\n...UART 3 Ready\n");
   }
 }
 void UART3LSRcheck() {
@@ -89,9 +89,9 @@ bool uart_lab__polled_put(uart_number_e uart, char output_byte) {
   }
 }
 
-static QueueHandle_t your_uart_rx_queue;
+static QueueHandle_t your_uart_rx_queueU3, your_uart_rx_queueU2;
 // Private function of our uart_lab.c
-static void your_receive_interrupt(void) {
+static void your_receive_interruptU3(void) {
   // TODO: Read the IIR register to figure out why you got interrupted
   // TODO: Based on IIR status, read the LSR register to confirm if there is data to be read
 
@@ -99,28 +99,57 @@ static void your_receive_interrupt(void) {
   if (LPC_UART3->IIR >> 1 & (0xf) == 2) // RDA Receive data available
     UART3LSRcheck();
   // TODO: Based on LSR status, read the RBR register and input the data to the RX Queue
-  const char byte = LPC_UART3->RBR;
-  xQueueSendFromISR(your_uart_rx_queue, &byte, NULL);
+  const char byte3 = LPC_UART3->RBR;
+  xQueueSendFromISR(your_uart_rx_queueU3, &byte3, NULL);
 }
+static void your_receive_interruptU2(void) {
+  // TODO: Read the IIR register to figure out why you got interrupted
+  // TODO: Based on IIR status, read the LSR register to confirm if there is data to be read
 
+  // Do not care about bit 0
+  if (LPC_UART2->IIR >> 1 & (0xf) == 2) // RDA Receive data available
+    UART2LSRcheck();
+  // TODO: Based on LSR status, read the RBR register and input the data to the RX Queue
+  const char byte2 = LPC_UART2->RBR;
+  xQueueSendFromISR(your_uart_rx_queueU2, &byte2, NULL);
+}
 // Public function to enable UART interrupt
 // TODO Declare this at the header file
 void uart__enable_receive_interrupt(uart_number_e uart_number) {
-  // TODO: Use lpc_peripherals.h to attach your interrupt
-  NVIC_EnableIRQ(UART3_IRQn); // ENABLE NVIC BEFORE INTERRUPT attachment
-  lpc_peripheral__enable_interrupt(LPC_PERIPHERAL__UART3, your_receive_interrupt, NULL);
+  if (uart_number == UART_2) {
+    // TODO: Use lpc_peripherals.h to attach your interrupt
+    NVIC_EnableIRQ(UART2_IRQn); // ENABLE NVIC BEFORE INTERRUPT attachment
+    lpc_peripheral__enable_interrupt(LPC_PERIPHERAL__UART2, your_receive_interruptU2, NULL);
 
-  // TODO: Enable UART receive interrupt by reading the LPC User manual
-  LPC_UART3->LCR &= ~(1 << 7);
-  LPC_UART3->IER |= (1 << 0); // SET Interrupts enable for RBR
-  // Hint: Read about the IER register
+    // TODO: Enable UART receive interrupt by reading the LPC User manual
+    LPC_UART2->LCR &= ~(1 << 7);
+    LPC_UART2->IER |= (1 << 0); // SET Interrupts enable for RBR
+    // Hint: Read about the IER register
 
-  // TODO: Create your RX queue
-  your_uart_rx_queue = xQueueCreate(8, sizeof(char));
+    // TODO: Create your RX queue
+    your_uart_rx_queueU2 = xQueueCreate(16, sizeof(char));
+  } else if (uart_number == UART_3) {
+    // TODO: Use lpc_peripherals.h to attach your interrupt
+    NVIC_EnableIRQ(UART3_IRQn); // ENABLE NVIC BEFORE INTERRUPT attachment
+    lpc_peripheral__enable_interrupt(LPC_PERIPHERAL__UART3, your_receive_interruptU3, NULL);
+
+    // TODO: Enable UART receive interrupt by reading the LPC User manual
+    LPC_UART3->LCR &= ~(1 << 7);
+    LPC_UART3->IER |= (1 << 0); // SET Interrupts enable for RBR
+    // Hint: Read about the IER register
+
+    // TODO: Create your RX queue
+    your_uart_rx_queueU3 = xQueueCreate(16, sizeof(char));
+  }
 }
 
 // Public function to get a char from the queue (this function should work without modification)
 // TODO: Declare this at the header file
-bool uart_lab__get_char_from_queue(char *input_byte, uint32_t timeout) {
-  return xQueueReceive(your_uart_rx_queue, input_byte, timeout);
+bool uart_lab__get_char_from_queue(uart_number_e uart, char *input_byte, uint32_t timeout) {
+  if (uart == UART_3)
+    return xQueueReceive(your_uart_rx_queueU3, input_byte, timeout);
+  else if (uart == UART_2)
+    return xQueueReceive(your_uart_rx_queueU2, input_byte, timeout);
+  else
+    fprintf(stderr, "INVALID UART\n");
 }
