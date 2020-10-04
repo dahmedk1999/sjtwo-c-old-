@@ -92,7 +92,7 @@ void board_1_sender_task(void *p) { // UART3
       printf("Sent: %c\n", number_as_string[i]);
     }
 
-    printf("Sent: %i over UART to the other board\n\n", number);
+    printf("\nSent: %d over UART\n", number);
     vTaskDelay(3000);
   }
 }
@@ -110,7 +110,7 @@ void board_2_receiver_task(void *p) { // UART2
     if ('\0' == byte) {
       number_as_string[counter] = '\0';
       counter = 0;
-      printf("Received this number from the other board: %s\n\n", number_as_string);
+      printf("Received this number from the other board: %s\n", number_as_string);
     }
     // We have not yet received the NULL '\0' char, so buffer the data
     else {
@@ -121,7 +121,6 @@ void board_2_receiver_task(void *p) { // UART2
         counter++;
       printf("Stored %c in array\n", byte);
     }
-    vTaskDelay(1000);
   }
 }
 /////////////////////////// MAIN ///////////////////////////
@@ -150,7 +149,7 @@ void main(void) {
   uart__enable_receive_interrupt(UART_3);
   uart__enable_receive_interrupt(UART_2);
   xTaskCreate(board_1_sender_task, "Sender", 2048 / sizeof(void *), NULL, 3, NULL);
-  xTaskCreate(board_2_receiver_task, "Receiver", 2048 / sizeof(void *), NULL, 3, NULL);
+  xTaskCreate(board_2_receiver_task, "Receiver", 2048 / sizeof(void *), NULL, 2, NULL);
 
   vTaskStartScheduler();
 }
