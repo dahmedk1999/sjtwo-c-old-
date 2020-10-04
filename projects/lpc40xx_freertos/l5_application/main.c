@@ -84,7 +84,16 @@ void uart_write_task(void *p) {
     vTaskDelay(500);
   }
 }
-
+// PART 2
+void uart_read_isr(void *p) {
+  while (true) {
+    char *data;
+    if (uart_lab__get_char_from_queue(&data, 50))
+      fprintf(stderr, "%c", data);
+    else
+      fprintf(stderr, "\nQueue is empty\n");
+  } // no need for delays since queues auto sleep/block
+}
 /////////////////////////// MAIN ///////////////////////////
 
 void main(void) {
