@@ -22,23 +22,6 @@
 #include "ssp2lab.h"
 #include "uart_lab.h"
 
-uint8_t GPIOPORTs[] = {1, 1, 1, 2};
-uint8_t GPIOLEDs[] = {18, 24, 26, 3};
-
-typedef struct {
-  uint8_t port;
-  uint8_t pin;
-} port_pin_s;
-
-typedef struct {
-  uint8_t R;
-  uint8_t G;
-  uint8_t B;
-} RGB;
-RGB globalRGB = {25, 25, 25};
-static SemaphoreHandle_t switch_press_indication0, switch_press_indication1, switch_press_indication2,switch_press_indication3;
-static QueueHandle_t adc_to_pwm_task_queue, Q1;
-SemaphoreHandle_t mutex_SSP2;
 // LPC_GPIO0 - LPC_GPIO4    Ports
 // CLR -> LOW 1
 // SET -> HIGH 1
@@ -94,6 +77,48 @@ void uart_read_isr(void *p) {
       fprintf(stderr, "\nQueue is empty\n");
   } // no need for delays since queues auto sleep/block
 }
+//Part 3 EX
+
+void board_1_sender_task(void *p) {
+  char number_as_string[16] = { 0 };
+  
+   while (true) {
+     const int number = rand();
+     sprintf(number_as_string, "%i", number);
+     
+     // Send one char at a time to the other board including terminating NULL char
+     for (int i = 0; i <= strlen(number_as_string); i++) {
+       uart_lab__polled_put(number_as_string[i]);
+       printf("Sent: %c\n", number_as_string[i]);
+     }
+ 
+     printf("Sent: %i over UART to the other board\n", number);
+     vTaskDelay(3000);
+   }
+}
+
+void board_2_receiver_task(void *p) {
+  char number_as_string[16] = { 0 };
+  int counter = 0;
+
+  while (true) {
+    char byte = 0;
+    uart_lab__get_char_from_queue(&byte, portMAX_DELAY);
+    printf("Received: %c\n", byte);
+    
+    // This is the last char, so print the number
+    if ('\0' == byte) {
+      number_as_string[counter] = '\0';
+      counter = 0;
+      printf("Received this number from the other board: %s\n", number_as_string);
+    }
+    // We have not yet received the NULL '\0' char, so buffer the data
+    else {
+      // TODO: Store data to number_as_string[] array one char at a time
+      // Hint: Use counter as an index, and increment it as long as we do not reach max value of 16
+    }
+  }
+}
 /////////////////////////// MAIN ///////////////////////////
 
 void main(void) {
@@ -102,9 +127,14 @@ void main(void) {
   uart_lab__init(UART_3, 96, 9600);
   gpio__construct_with_function(4, 28, GPIO__FUNCTION_2);
   gpio__construct_with_function(4, 29, GPIO__FUNCTION_2);
+  // Part 1
+  // xTaskCreate(uart_write_task, "Ux3Write", 2048 / sizeof(void *), NULL, 3, NULL);
+  // xTaskCreate(uart_read_task, "Ux3Read", 2048 / sizeof(void *), NULL, 3, NULL);
 
+  // Part 2
+  uart__enable_receive_interrupt(UART_3);
   xTaskCreate(uart_write_task, "Ux3Write", 2048 / sizeof(void *), NULL, 3, NULL);
-  xTaskCreate(uart_read_task, "Ux3Read", 2048 / sizeof(void *), NULL, 3, NULL);
+  xTaskCreate(uart_read_isr, "Ux3ISRRead", 2048 / sizeof(void *), NULL, 3, NULL);
 
   vTaskStartScheduler();
 }

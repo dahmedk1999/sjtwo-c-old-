@@ -56,15 +56,13 @@ bool uart_lab__polled_get(uart_number_e uart, char *input_byte) {
   // b) Copy data from RBR register to input_byte
   if (uart == UART_2) {
     LPC_UART2->LCR &= ~(1 << 7); // Dlab reset
-    while (!(LPC_UART2->LSR & (1 << 0))) {
-    } // While LSR's RDR is not set, wait until it is set (Ready)
+    UART2LSRcheck();             // While LSR's RDR is not set, wait until it is set (Ready)
     *input_byte = LPC_UART2->RBR;
     return true;
 
   } else if (uart == UART_3) {
     LPC_UART3->LCR &= ~(1 << 7); // Dlab reset
-    while (!(LPC_UART3->LSR & (1 << 0))) {
-    } // While LSR's RDR is not set, wait until it is set (Ready)
+    UART3LSRcheck();             // While LSR's RDR is not set, wait until it is set (Ready)
     *input_byte = LPC_UART3->RBR;
     return true;
   }
@@ -76,21 +74,17 @@ bool uart_lab__polled_put(uart_number_e uart, char output_byte) {
   if (uart == UART_2) {
 
     LPC_UART2->LCR &= ~(1 << 7);
-    while (!(LPC_UART2->LSR & (1 << 5))) {
-    }                             // THR is 0 | contains valid data. 1 when empty.
+    UART2LSRcheck();              // THR is 0 | contains valid data. 1 when empty.
     LPC_UART2->THR = output_byte; // Send data when THR is empty
-    while (!(LPC_UART2->LSR & (1 << 5))) {
-    }
+    UART2LSRcheck();
     return true;
 
   } else if (uart == UART_3) {
 
     LPC_UART3->LCR &= ~(1 << 7);
-    while (!(LPC_UART3->LSR & (1 << 5))) {
-    }                             // THR is 0 | contains valid data. 1 when empty.
+    UART3LSRcheck();              // THR is 0 | contains valid data. 1 when empty.
     LPC_UART3->THR = output_byte; // Send data when THR is empty
-    while (!(LPC_UART3->LSR & (1 << 5))) {
-    }
+    UART3LSRcheck();
     return true;
   }
 }
@@ -114,15 +108,15 @@ static void your_receive_interrupt(void) {
 void uart__enable_receive_interrupt(uart_number_e uart_number) {
   // TODO: Use lpc_peripherals.h to attach your interrupt
   NVIC_EnableIRQ(UART3_IRQn); // ENABLE NVIC BEFORE INTERRUPT attachment
-  lpc_peripheral__enable_interrupt(LPC_PERIPHERAL__UART3, your_receive_interrupt,NULL);
+  lpc_peripheral__enable_interrupt(LPC_PERIPHERAL__UART3, your_receive_interrupt, NULL);
 
   // TODO: Enable UART receive interrupt by reading the LPC User manual
-  // LPC_UART3->LCR &= ~(1<<7);
+  LPC_UART3->LCR &= ~(1 << 7);
   LPC_UART3->IER |= (1 << 0); // SET Interrupts enable for RBR
   // Hint: Read about the IER register
 
   // TODO: Create your RX queue
-  your_uart_rx_queue = xQueueCreate(1, sizeof(char));
+  your_uart_rx_queue = xQueueCreate(8, sizeof(char));
 }
 
 // Public function to get a char from the queue (this function should work without modification)
