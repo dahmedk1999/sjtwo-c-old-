@@ -43,7 +43,41 @@ const port_pin_s *led = (port_pin_s *)(params);
 
 // clang-format on
 // UART
+void uart_read_task(void *p) {
 
+  while (1) {
+    char *data;
+    uart_lab__polled_get(UART_3, &data);
+    fprintf(stderr, "%c", data);
+    vTaskDelay(50);
+  }
+}
+
+void uart_write_task(void *p) {
+  while (1) {
+    uart_lab__polled_put(UART_3, 'W');
+    uart_lab__polled_put(UART_3, 'O');
+    uart_lab__polled_put(UART_3, 'R');
+    uart_lab__polled_put(UART_3, 'K');
+    uart_lab__polled_put(UART_3, 'p');
+    uart_lab__polled_put(UART_3, 'l');
+    uart_lab__polled_put(UART_3, 's');
+    uart_lab__polled_put(UART_3, '\n');
+    // fprintf(stderr, "Sent %c\n", data);
+    vTaskDelay(500);
+  }
+}
+// PART 2
+void uart_read_isr(void *p) {
+  while (true) {
+    char *data;
+    if (uart_lab__get_char_from_queue(UART_3, &data, 50))
+      fprintf(stderr, "%c", data);
+    else
+      fprintf(stderr, "\nQueue is empty\n");
+  } // no need for delays since queues auto sleep/block
+}
+// Part 3 EX
 
 void board_1_sender_task(void *p) { // UART3
   char number_as_string[16] = {0};
@@ -96,7 +130,28 @@ void board_2_receiver_task(void *p) { // UART2
 /////////////////////////// MAIN ///////////////////////////
 
 void main(void) {
-  
+  srand(time(NULL));
+  // TODO: Use uart_lab__init() function and initialize UART2 or UART3 (your choice)
+  // TODO: Pin Configure IO pins to perform UART2/UART3 function
+  uart_lab__init(UART_3, 96, 9600);
+  uart_lab__init(UART_2, 96, 9600);
+  gpio__construct_with_function(4, 28, GPIO__FUNCTION_2); // UART3 TX
+  //  gpio__construct_with_function(4, 29, GPIO__FUNCTION_2);//UART3 RX
+  //  gpio__construct_with_function(2, 8, GPIO__FUNCTION_2);//UART2 TX
+  gpio__construct_with_function(2, 9, GPIO__FUNCTION_2); // UART2 RX
+  // Part 1
+  // xTaskCreate(uart_write_task, "Ux3Write", 2048 / sizeof(void *), NULL, 3, NULL);
+  // xTaskCreate(uart_read_task, "Ux3Read", 2048 / sizeof(void *), NULL, 3, NULL);
+
+  // Part 2
+  // uart__enable_receive_interrupt(UART_3);
+  // xTaskCreate(uart_write_task, "Ux3Write", 2048 / sizeof(void *), NULL, 3, NULL);
+  // xTaskCreate(uart_read_isr, "Ux3ISRRead", 2048 / sizeof(void *), NULL, 3, NULL);
+
+  // Part 3 EX
+  gpio__construct_with_function(0, 26, GPIO__FUNCITON_0_IO_PIN);
+  uart__enable_receive_interrupt(UART_3);
+  uart__enable_receive_interrupt(UART_2);
   xTaskCreate(board_1_sender_task, "Sender", 2048 / sizeof(void *), NULL, 2, NULL);
   xTaskCreate(board_2_receiver_task, "Receiver", 2048 / sizeof(void *), NULL, 3, NULL);
 
