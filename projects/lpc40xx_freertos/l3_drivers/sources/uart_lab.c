@@ -14,8 +14,7 @@ void uart_lab__init(uart_number_e uart, uint32_t peripheral_clock, uint32_t baud
     LPC_SC->PCONP |= (1 << 24);
     LPC_UART2->FCR = (1 << 0);
 
-    const uint16_t divider16bit =
-        (uint16_t)(peripheral_clock * 1000 * 1000) / (16 * baud_rate + 0.5); // 0.5 is the error fraction
+    const uint16_t divider16bit =(peripheral_clock * 1000 * 1000) / (16 * baud_rate + 0.5); // 0.5 is the error fraction
 
     const uint8_t dlab = (1 << 7);
     LPC_UART2->LCR |= dlab; // Open control
@@ -30,8 +29,7 @@ void uart_lab__init(uart_number_e uart, uint32_t peripheral_clock, uint32_t baud
     LPC_SC->PCONP |= (1 << 25);
     LPC_UART3->FCR = (1 << 0);
 
-    const uint16_t divider16bit =
-        (uint16_t)(peripheral_clock * 1000 * 1000) / (16 * baud_rate); // 0.5 is the error fraction
+    const uint16_t divider16bit = (peripheral_clock * 1000 * 1000) / (16 * baud_rate);
 
     const uint8_t dlab = (1 << 7);
     LPC_UART3->LCR |= dlab;     // Open control

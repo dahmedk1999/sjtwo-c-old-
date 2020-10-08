@@ -83,16 +83,18 @@ void board_1_sender_task(void *p) { // UART3
   char number_as_string[16] = {0};
 
   while (true) {
-    const int number = rand() % 1000;
+    const int number = rand() % 10000;
     sprintf(number_as_string, "%i", number);
 
     // Send one char at a time to the other board including terminating NULL char
     for (int i = 0; i <= strlen(number_as_string); i++) {
+      gpioX__set_high(0, 26);
       uart_lab__polled_put(UART_3, number_as_string[i]);
-      printf("Sent: %c\n", number_as_string[i]);
+      gpioX__set_low(0, 26);
+      printf("\nput: %c\n", number_as_string[i]);
     }
 
-    printf("\nSent: %d over UART\n", number);
+    printf("\nput full: %i\n", number);
     vTaskDelay(3000);
   }
 }
@@ -103,14 +105,16 @@ void board_2_receiver_task(void *p) { // UART2
 
   while (true) {
     char byte = 0;
+    gpioX__set_high(0, 26);
     uart_lab__get_char_from_queue(UART_2, &byte, portMAX_DELAY);
-    printf("Received: %c\n", byte);
+    gpioX__set_low(0, 26);
+    printf("\nget: %c\n", byte);
 
     // This is the last char, so print the number
     if ('\0' == byte) {
       number_as_string[counter] = '\0';
       counter = 0;
-      printf("Received this number from the other board: %s\n", number_as_string);
+      printf("\nget full: %s\n", number_as_string);
     }
     // We have not yet received the NULL '\0' char, so buffer the data
     else {
@@ -119,7 +123,7 @@ void board_2_receiver_task(void *p) { // UART2
       number_as_string[counter] = byte;
       if (counter < 16)
         counter++;
-      printf("Stored %c in array\n", byte);
+      printf("\nStored %c", byte);
     }
   }
 }
@@ -135,7 +139,6 @@ void main(void) {
   //  gpio__construct_with_function(4, 29, GPIO__FUNCTION_2);//UART3 RX
   //  gpio__construct_with_function(2, 8, GPIO__FUNCTION_2);//UART2 TX
   gpio__construct_with_function(2, 9, GPIO__FUNCTION_2); // UART2 RX
-
   // Part 1
   // xTaskCreate(uart_write_task, "Ux3Write", 2048 / sizeof(void *), NULL, 3, NULL);
   // xTaskCreate(uart_read_task, "Ux3Read", 2048 / sizeof(void *), NULL, 3, NULL);
@@ -146,10 +149,11 @@ void main(void) {
   // xTaskCreate(uart_read_isr, "Ux3ISRRead", 2048 / sizeof(void *), NULL, 3, NULL);
 
   // Part 3 EX
+  gpio__construct_with_function(0, 26, GPIO__FUNCITON_0_IO_PIN);
   uart__enable_receive_interrupt(UART_3);
   uart__enable_receive_interrupt(UART_2);
-  xTaskCreate(board_1_sender_task, "Sender", 2048 / sizeof(void *), NULL, 3, NULL);
-  xTaskCreate(board_2_receiver_task, "Receiver", 2048 / sizeof(void *), NULL, 2, NULL);
+  xTaskCreate(board_1_sender_task, "Sender", 2048 / sizeof(void *), NULL, 2, NULL);
+  xTaskCreate(board_2_receiver_task, "Receiver", 2048 / sizeof(void *), NULL, 3, NULL);
 
   vTaskStartScheduler();
 }
