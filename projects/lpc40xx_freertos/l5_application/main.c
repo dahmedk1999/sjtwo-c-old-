@@ -42,9 +42,6 @@ const port_pin_s *led = (port_pin_s *)(params);
 */
 
 // clang-format on
-static void create_uart_task(void);
-static void uart_task(void *params);
-
 static QueueHandle_t switch_queue;
 
 typedef enum { switch__off, switch__on } switch_e;
@@ -80,53 +77,11 @@ void consumer(void *p) {
 /////////////////////////// MAIN ///////////////////////////
 
 void main(void) {
-  create_uart_task();
+  // create_uart_task();
+  sj2_cli__init();
   switch_queue = xQueueCreate(1, sizeof(switch_e));
   xTaskCreate(producer, "producer", 2048 / sizeof(void *), NULL, 3, NULL);
   xTaskCreate(consumer, "consumer", 2048 / sizeof(void *), NULL, 1, NULL);
   vTaskStartScheduler();
 }
 //////////////////////////END MAIN/////////////////////////
-
-static void create_uart_task(void) {
-  // It is advised to either run the uart_task, or the SJ2 command-line (CLI), but not both
-  // Change '#if (0)' to '#if (1)' and vice versa to try it out
-#if (0)
-  // printf() takes more stack space, size this tasks' stack higher
-  xTaskCreate(uart_task, "uart", (512U * 8) / sizeof(void *), NULL, PRIORITY_LOW, NULL);
-#else
-  sj2_cli__init();
-  UNUSED(uart_task); // uart_task is un-used in if we are doing cli init()
-#endif
-}
-
-// This sends periodic messages over printf() which uses system_calls.c to send them to UART0
-static void uart_task(void *params) {
-  TickType_t previous_tick = 0;
-  TickType_t ticks = 0;
-
-  while (true) {
-    // This loop will repeat at precise task delay, even if the logic below takes variable amount of ticks
-    vTaskDelayUntil(&previous_tick, 2000);
-
-    /* Calls to fprintf(stderr, ...) uses polled UART driver, so this entire output will be fully
-     * sent out before this function returns. See system_calls.c for actual implementation.
-     *
-     * Use this style print for:
-     *  - Interrupts because you cannot use printf() inside an ISR
-     *    This is because regular printf() leads down to xQueueSend() that might block
-     *    but you cannot block inside an ISR hence the system might crash
-     *  - During debugging in case system crashes before all output of printf() is sent
-     */
-    ticks = xTaskGetTickCount();
-    fprintf(stderr, "%u: This is a polled version of printf used for debugging ... finished in", (unsigned)ticks);
-    fprintf(stderr, " %lu ticks\n", (xTaskGetTickCount() - ticks));
-
-    /* This deposits data to an outgoing queue and doesn't block the CPU
-     * Data will be sent later, but this function would return earlier
-     */
-    ticks = xTaskGetTickCount();
-    printf("This is a more efficient printf ... finished in");
-    printf(" %lu ticks\n\n", (xTaskGetTickCount() - ticks));
-  }
-}
