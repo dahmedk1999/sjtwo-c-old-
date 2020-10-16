@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"path": "..\\..\\.."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"atomic": "cpp",
+			"charconv": "cpp",
+			"*.mods": "c"
+		},
+		"git.ignoreLimitWarning": true
+	}
+}

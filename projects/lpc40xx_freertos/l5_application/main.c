@@ -21,7 +21,10 @@
 #include "semphr.h"
 #include "ssp2lab.h"
 #include "uart_lab.h"
+#include "ff.h"
+#include <string.h>
 
+/*
 // LPC_GPIO0 - LPC_GPIO4    Ports
 // CLR -> LOW 1
 // SET -> HIGH 1
@@ -30,7 +33,7 @@
 // REG & (1 << 9) To Check  (?)
 // PIN -> 1 High 0 Low
 // LEDs			 BUTTONS
-/*
+
 GPIO1 -18 LED 0  GPIO0 -29 Button 0
 GPIO1 -24 LED 1  GPIO0 -30 Button 1
 GPIO1 -26 LED 2  GPIO1 -15 Button 2
@@ -42,46 +45,63 @@ const port_pin_s *led = (port_pin_s *)(params);
 */
 
 // clang-format on
-static QueueHandle_t switch_queue;
+static QueueHandle_t sensor_queue;
 
-typedef enum { switch__off, switch__on } switch_e;
-switch_e get_switch_input_from_switch0(switch_e set) { return set; }
-// TODO: Create this task at PRIORITY_LOW
-void producer(void *p) {
-  while (1) {
+typedef struct {
+  double sample[100];
+  double sum;
+  double avg;
+} SampleData;
+SampleData Data;
 
-    // TODO: Get some input value from your board
-    const switch_e switch_value = get_switch_input_from_switch0(switch__on);
+void write_file_using_fatfs_pi(void) {
+  const char *filename = "file.txt";
+  FIL file; // File handle
+  UINT bytes_written = 0;
+  FRESULT result = f_open(&file, filename, (FA_WRITE | FA_CREATE_ALWAYS));
 
-    // TODO: Print a message before xQueueSend()
-    printf("Before queue sends\n");
-    xQueueSend(switch_queue, &switch_value, 0);
-    // TODO: Print a message after xQueueSend()
-    printf("After queue sends\n");
-    vTaskDelay(7000);
+  if (FR_OK == result) {
+    char string[64];
+    sprintf(string, "Value,%i\n", rand() % 1000);
+    if (FR_OK == f_write(&file, string, strlen(string), &bytes_written)) {
+    } else {
+      printf("ERROR: Failed to write data to file\n");
+    }
+    f_close(&file);
+  } else {
+    printf("ERROR: Failed to open: %s\n", filename);
   }
 }
 
-// TODO: Create this task at PRIORITY_HIGH
-void consumer(void *p) {
-  switch_e switch_value;
+void sensor_producer(void *p) {
   while (1) {
-    // TODO: Print a message before xQueueReceive()
-    printf("Before receive.\n");
-    xQueueReceive(switch_queue, &switch_value, portMAX_DELAY);
-    // TODO: Print a message after xQueueReceive()
-    printf("After receiving\n");
+    printf("Sampling...\n");
+    for (int i = 0; i < 100; i++) // This is where the sensor sampling will be inserted
+      Data.sum += Data.sample[i]; // Input each sample into the sample array
+    Data.avg = Data.sum / 100;    // Send average to queue
+    if (xQueueSend(sensor_queue, &Data, 0))
+      printf("Sample average sent");
+
+    vTaskDelay(100);
+  }
+}
+
+void sensor_consumer(void *p) {
+  while (1) {
+    printf("Before writing.\n");
+    if (xQueueReceive(sensor_queue, &Data, portMAX_DELAY))
+      printf("After receiving\n"); // SDCard writing goes here
   }
 }
 
 /////////////////////////// MAIN ///////////////////////////
 
 void main(void) {
-  // create_uart_task();
+
   sj2_cli__init();
-  switch_queue = xQueueCreate(1, sizeof(switch_e));
-  xTaskCreate(producer, "producer", 2048 / sizeof(void *), NULL, 3, NULL);
-  xTaskCreate(consumer, "consumer", 2048 / sizeof(void *), NULL, 1, NULL);
+  sensor_queue = xQueueCreate(5, sizeof(SampleData));
+  xTaskCreate(sensor_producer, "producer", 2048 / sizeof(void *), NULL, 3, NULL);
+  xTaskCreate(sensor_consumer, "consumer", 2048 / sizeof(void *), NULL, 1, NULL);
   vTaskStartScheduler();
 }
 //////////////////////////END MAIN/////////////////////////
