@@ -10,10 +10,32 @@ Write command   LOW     LOW       L   L    ↑
 Write data      LOW     LOW       L   H    ↑
 */
 unsigned int bitmap[8][128]; // 8 pages(8 rows/8bytes), 128 bits(128 columns/16bytes)
+typedef void (*function_pointer_OLED)(void);
+function_pointer_OLED callback_OLED[256]; // Call the character callbacks by using ascii values for indexing
 void spi1__init();
 uint8_t ssp1__exch_byte(uint8_t data_out);
 void cs_OLED();
 void ds_OLED();
 
+void command_mode();
+void data_mode();
+
+void horizontal_addressing();
+
 void power_up();
 void power_down();
+void update_OLED();
+/* Clear screen */
+void clear_OLED();
+/* Fill screen */
+void fill_OLED();
+/*Experimental, Should randomize pixels*/
+void noise_OLED();
+/* Updates the OLED with what is on the bitmap */
+void update_OLED();
+
+/* User functions */
+/* Use Function pointer Lookup table to display each character on OLED  */
+void configure_OLED();
+void OLED_Start();
+void print_OLED(char *toprint);

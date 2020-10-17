@@ -23,7 +23,7 @@
 #include "uart_lab.h"
 #include "ff.h"
 #include <string.h>
-
+#include "OLED.h"
 /*
 // LPC_GPIO0 - LPC_GPIO4    Ports
 // CLR -> LOW 1
@@ -98,10 +98,14 @@ void sensor_consumer(void *p) {
 
 void main(void) {
 
-  sj2_cli__init();
-  sensor_queue = xQueueCreate(5, sizeof(SampleData));
-  xTaskCreate(sensor_producer, "producer", 2048 / sizeof(void *), NULL, 3, NULL);
-  xTaskCreate(sensor_consumer, "consumer", 2048 / sizeof(void *), NULL, 1, NULL);
-  vTaskStartScheduler();
+  // sj2_cli__init();
+  // sensor_queue = xQueueCreate(5, sizeof(SampleData));
+  // xTaskCreate(sensor_producer, "producer", 2048 / sizeof(void *), NULL, 3, NULL);
+  // xTaskCreate(sensor_consumer, "consumer", 2048 / sizeof(void *), NULL, 1, NULL);
+  // vTaskStartScheduler();
+
+  configure_OLED();
+  OLED_Start();
+  print_OLED("00000");
 }
 //////////////////////////END MAIN/////////////////////////
