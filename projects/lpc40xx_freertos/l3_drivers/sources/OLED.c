@@ -73,7 +73,7 @@ gpioX__set_high(1,25);
 void horizontal_addressing()
 {
   command_mode();
-  ssp1__exch_byte(0x28);ssp1__exch_byte(0x00);//Sets to horizontal mode
+  ssp1__exch_byte(0x20);ssp1__exch_byte(0x00);//Sets to horizontal mode
   ssp1__exch_byte(0x21);ssp1__exch_byte(0x00);ssp1__exch_byte(0x7F);//column address start0-127end
   ssp1__exch_byte(0x22);ssp1__exch_byte(0x00);ssp1__exch_byte(0x07);//page address start0-7end 
 }
@@ -163,34 +163,500 @@ void print_OLED(char *toprint){
   ds_OLED();
 }
 
-/* Lookup Table */
+/* ----------------Lookup Table---------------- */
+
 void char_0() {
-  ssp1__exch_byte(0b01111100);
-  ssp1__exch_byte(0b10001010);
-  ssp1__exch_byte(0b10010010);
-  ssp1__exch_byte(0b10100010);
-  ssp1__exch_byte(0b01111100);
+  ssp1__exch_byte(0b00111110);
+  ssp1__exch_byte(0b01010001);
+  ssp1__exch_byte(0b01001001);
+  ssp1__exch_byte(0b01000101);
+  ssp1__exch_byte(0b00111110);
   ssp1__exch_byte(0x00);
   ssp1__exch_byte(0x00);
   ssp1__exch_byte(0x00);
 }
-/* End Lookup Table */
+void char_1() {
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0b01000010);
+  ssp1__exch_byte(0b01111111);
+  ssp1__exch_byte(0b01000000);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_2() {
+  ssp1__exch_byte(0b01000010);
+  ssp1__exch_byte(0b01100001);
+  ssp1__exch_byte(0b01010001);
+  ssp1__exch_byte(0b01001001);
+  ssp1__exch_byte(0b01000110);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_3() {
+  ssp1__exch_byte(0b00100010);
+  ssp1__exch_byte(0b01000001);
+  ssp1__exch_byte(0b01001001);
+  ssp1__exch_byte(0b01001001);
+  ssp1__exch_byte(0b00110110);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_4() {
+  ssp1__exch_byte(0b00011000);
+  ssp1__exch_byte(0b00010100);
+  ssp1__exch_byte(0b00010010);
+  ssp1__exch_byte(0b01111111);
+  ssp1__exch_byte(0b00010000);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_5() {
+  ssp1__exch_byte(0b00100111);
+  ssp1__exch_byte(0b01000101);
+  ssp1__exch_byte(0b01000101);
+  ssp1__exch_byte(0b01000101);
+  ssp1__exch_byte(0b00111001);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_6() {
+  ssp1__exch_byte(0b00111100);
+  ssp1__exch_byte(0b01001010);
+  ssp1__exch_byte(0b01001001);
+  ssp1__exch_byte(0b01001001);
+  ssp1__exch_byte(0b00110000);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_7() {
+  ssp1__exch_byte(0b00000001);
+  ssp1__exch_byte(0b01110001);
+  ssp1__exch_byte(0b00001001);
+  ssp1__exch_byte(0b00000101);
+  ssp1__exch_byte(0b00000011);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_8() {
+  ssp1__exch_byte(0b00110110);
+  ssp1__exch_byte(0b01001001);
+  ssp1__exch_byte(0b01001001);
+  ssp1__exch_byte(0b01001001);
+  ssp1__exch_byte(0b00110110);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_9() {
+  ssp1__exch_byte(0b00000110);
+  ssp1__exch_byte(0b01001001);
+  ssp1__exch_byte(0b01001001);
+  ssp1__exch_byte(0b00101001);
+  ssp1__exch_byte(0b00011110);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_dquote() {
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0b00000111);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0b00000111);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_squote() {
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0b00000101);
+  ssp1__exch_byte(0b00000011);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_comma() {
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0b10100000);
+  ssp1__exch_byte(0b01100000);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_qmark() {
+  ssp1__exch_byte(0b00000010);
+  ssp1__exch_byte(0b00000001);
+  ssp1__exch_byte(0b01010001);
+  ssp1__exch_byte(0b00001001);
+  ssp1__exch_byte(0b00000110);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_excl() {
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0b01011111);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_at() {
+  ssp1__exch_byte(0b00110010);
+  ssp1__exch_byte(0b01001001);
+  ssp1__exch_byte(0b01111001);
+  ssp1__exch_byte(0b01000001);
+  ssp1__exch_byte(0b00111110);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_undersc() {
+  ssp1__exch_byte(0b10000000);
+  ssp1__exch_byte(0b10000000);
+  ssp1__exch_byte(0b10000000);
+  ssp1__exch_byte(0b10000000);
+  ssp1__exch_byte(0b10000000);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_star() {
+  ssp1__exch_byte(0b00010100);
+  ssp1__exch_byte(0b00001000);
+  ssp1__exch_byte(0b00111110);
+  ssp1__exch_byte(0b00001000);
+  ssp1__exch_byte(0b00010100);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_hash() {
+  ssp1__exch_byte(0b00010100);
+  ssp1__exch_byte(0b01111111);
+  ssp1__exch_byte(0b00010100);
+  ssp1__exch_byte(0b01111111);
+  ssp1__exch_byte(0b00010100);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_percent() {
+  ssp1__exch_byte(0b00100011);
+  ssp1__exch_byte(0b00010011);
+  ssp1__exch_byte(0b00001000);
+  ssp1__exch_byte(0b01100100);
+  ssp1__exch_byte(0b01100010);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_amper() {
+  ssp1__exch_byte(0b00110110);
+  ssp1__exch_byte(0b01001001);
+  ssp1__exch_byte(0b01010101);
+  ssp1__exch_byte(0b00100010);
+  ssp1__exch_byte(0b01010000);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_parenthL() {
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0b00011100);
+  ssp1__exch_byte(0b00100010);
+  ssp1__exch_byte(0b01000001);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_parenthR() {
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0b01000001);
+  ssp1__exch_byte(0b00100010);
+  ssp1__exch_byte(0b00011100);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_plus() {
+  ssp1__exch_byte(0b00001000);
+  ssp1__exch_byte(0b00001000);
+  ssp1__exch_byte(0b00111110);
+  ssp1__exch_byte(0b00001000);
+  ssp1__exch_byte(0b00001000);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_minus() {
+  ssp1__exch_byte(0b00001000);
+  ssp1__exch_byte(0b00001000);
+  ssp1__exch_byte(0b00001000);
+  ssp1__exch_byte(0b00001000);
+  ssp1__exch_byte(0b00001000);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_div() {
+  ssp1__exch_byte(0b00100000);
+  ssp1__exch_byte(0b00010000);
+  ssp1__exch_byte(0b00001000);
+  ssp1__exch_byte(0b00000100);
+  ssp1__exch_byte(0b00000010);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_colon() {
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0b00110110);
+  ssp1__exch_byte(0b00110110);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_scolon() {
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0b01010110);
+  ssp1__exch_byte(0b00110110);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_less() {
+  ssp1__exch_byte(0b00001000);
+  ssp1__exch_byte(0b00010100);
+  ssp1__exch_byte(0b00100010);
+  ssp1__exch_byte(0b01000001);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_greater() {
+  ssp1__exch_byte(0b10000010);
+  ssp1__exch_byte(0b01000100);
+  ssp1__exch_byte(0b00101000);
+  ssp1__exch_byte(0b00010000);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_equal() {
+  ssp1__exch_byte(0b00010100);
+  ssp1__exch_byte(0b00010100);
+  ssp1__exch_byte(0b00010100);
+  ssp1__exch_byte(0b00010100);
+  ssp1__exch_byte(0b00010100);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_bracketL() {
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0b01111111);
+  ssp1__exch_byte(0b01000001);
+  ssp1__exch_byte(0b01000001);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_backslash() {
+  ssp1__exch_byte(0b00000010);
+  ssp1__exch_byte(0b00000100);
+  ssp1__exch_byte(0b00001000);
+  ssp1__exch_byte(0b00010000);
+  ssp1__exch_byte(0b00100000);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_bracketR() {
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0b01000001);
+  ssp1__exch_byte(0b01000001);
+  ssp1__exch_byte(0b01111111);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_caret() {
+  ssp1__exch_byte(0b00000100);
+  ssp1__exch_byte(0b00000010);
+  ssp1__exch_byte(0b00000001);
+  ssp1__exch_byte(0b00000010);
+  ssp1__exch_byte(0b00000100);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_bquote() {
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0b00000001);
+  ssp1__exch_byte(0b00000010);
+  ssp1__exch_byte(0b00000100);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_braceL() {
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0b00001000);
+  ssp1__exch_byte(0b00110110);
+  ssp1__exch_byte(0b01000001);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_braceR() {
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0b01000001);
+  ssp1__exch_byte(0b00110110);
+  ssp1__exch_byte(0b00001000);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_bar() {
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0b01111111);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_tilde() {
+  ssp1__exch_byte(0b00001000);
+  ssp1__exch_byte(0b00000100);
+  ssp1__exch_byte(0b00000100);
+  ssp1__exch_byte(0b00001000);
+  ssp1__exch_byte(0b00000100);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_space() {
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_period() {
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0b01100000);
+  ssp1__exch_byte(0b01100000);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_dollar() {
+  ssp1__exch_byte(0b00100100);
+  ssp1__exch_byte(0b00101010);
+  ssp1__exch_byte(0b01101011);
+  ssp1__exch_byte(0b00101010);
+  ssp1__exch_byte(0b00010010);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+/* ---------------End Lookup Table--------------*/
+// clang-format on
+void setup_lookuptable_OLED() {
+  callback_OLED[(int)'0'] = char_0;
+  callback_OLED[(int)'1'] = char_1;
+  callback_OLED[(int)'2'] = char_2;
+  callback_OLED[(int)'3'] = char_3;
+  callback_OLED[(int)'4'] = char_4;
+  callback_OLED[(int)'5'] = char_5;
+  callback_OLED[(int)'6'] = char_6;
+  callback_OLED[(int)'7'] = char_7;
+  callback_OLED[(int)'8'] = char_8;
+  callback_OLED[(int)'9'] = char_9;
 
-void setup_lookuptable_OLED(){
-  callback_OLED[(int)'0']=char_0;
+  callback_OLED[(int)'"'] = char_dquote;
+  callback_OLED[(int)'\''] = char_squote;
+  callback_OLED[(int)','] = char_comma;
+  callback_OLED[(int)'?'] = char_qmark;
+  callback_OLED[(int)'!'] = char_excl;
+  callback_OLED[(int)'@'] = char_at;
+  callback_OLED[(int)'_'] = char_undersc;
+  callback_OLED[(int)'*'] = char_star;
+  callback_OLED[(int)'#'] = char_hash;
+  callback_OLED[(int)'%'] = char_percent;
+
+  callback_OLED[(int)'&'] = char_amper;
+  callback_OLED[(int)'('] = char_parenthL;
+  callback_OLED[(int)')'] = char_parenthR;
+  callback_OLED[(int)'+'] = char_plus;
+  callback_OLED[(int)'-'] = char_minus;
+  callback_OLED[(int)'/'] = char_div;
+  callback_OLED[(int)':'] = char_colon;
+  callback_OLED[(int)';'] = char_scolon;
+  callback_OLED[(int)'<'] = char_less;
+  callback_OLED[(int)'>'] = char_greater;
+
+  callback_OLED[(int)'='] = char_equal;
+  callback_OLED[(int)'['] = char_bracketL;
+  callback_OLED[(int)'\\'] = char_backslash;
+  callback_OLED[(int)']'] = char_bracketR;
+  callback_OLED[(int)'^'] = char_caret;
+  callback_OLED[(int)'`'] = char_bquote;
+  callback_OLED[(int)'{'] = char_braceL;
+  callback_OLED[(int)'}'] = char_braceR;
+  callback_OLED[(int)'|'] = char_bar;
+  callback_OLED[(int)'~'] = char_tilde;
+
+  callback_OLED[(int)' '] = char_space;
+  callback_OLED[(int)'.'] = char_period;
+  callback_OLED[(int)'$'] = char_dollar;
 }
 
-void OLED_Start()
-{
-configure_OLED();
-spi1__init();
+void OLED_Start() {
+  configure_OLED();
+  spi1__init();
 
-clear_OLED();
-cs_OLED();
+  clear_OLED();
+  cs_OLED();
 
-power_up();
-setup_lookuptable_OLED();
-update_OLED();
+  power_up();
+  setup_lookuptable_OLED();
+  update_OLED();
 
-ds_OLED();
+  ds_OLED();
 }
