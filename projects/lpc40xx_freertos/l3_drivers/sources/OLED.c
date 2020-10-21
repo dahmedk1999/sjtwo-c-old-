@@ -7,6 +7,9 @@
 #include "lpc_peripherals.h"
 #include <stdio.h>
 #include <string.h>
+
+bool ON__FLAG=false;
+
 // 4 wire spi control
 // Pins D0, D1 connect to CLK(P0.7) and MOSI(P0.9), respectively
 // Pins /CS, D/C connect to P1.22 and P1.25, respectively
@@ -152,6 +155,9 @@ void update_OLED() {
 }
 
 void print_OLED(char *toprint){
+  if(strlen(toprint)==0 || toprint=='\0'){}
+  else
+  {
   cs_OLED();
   data_mode();
 
@@ -161,10 +167,564 @@ void print_OLED(char *toprint){
       handler_OLED();
     }
   ds_OLED();
+  }
 }
 
 /* ----------------Lookup Table---------------- */
+/* Bang's Contribution */
+//
+void char_A() {
+  ssp1__exch_byte(0x7E);
+  ssp1__exch_byte(0x09);
+  ssp1__exch_byte(0x09);
+  ssp1__exch_byte(0x09);
+  ssp1__exch_byte(0x7E);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
 
+void char_B() {
+  ssp1__exch_byte(0x7F);
+  ssp1__exch_byte(0x49);
+  ssp1__exch_byte(0x49);
+  ssp1__exch_byte(0x49);
+  ssp1__exch_byte(0x36);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_C() {
+  ssp1__exch_byte(0x3E);
+  ssp1__exch_byte(0x41);
+  ssp1__exch_byte(0x41);
+  ssp1__exch_byte(0x41);
+  ssp1__exch_byte(0x22);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_D() {
+  ssp1__exch_byte(0x7F);
+  ssp1__exch_byte(0x41);
+  ssp1__exch_byte(0x41);
+  ssp1__exch_byte(0x41);
+  ssp1__exch_byte(0x3E);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_E() {
+  ssp1__exch_byte(0x7F);
+  ssp1__exch_byte(0x49);
+  ssp1__exch_byte(0x49);
+  ssp1__exch_byte(0x49);
+  ssp1__exch_byte(0x41);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_F() {
+  ssp1__exch_byte(0x7F);
+  ssp1__exch_byte(0x09);
+  ssp1__exch_byte(0x09);
+  ssp1__exch_byte(0x09);
+  ssp1__exch_byte(0x01);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_G() {
+  ssp1__exch_byte(0x3E);
+  ssp1__exch_byte(0x41);
+  ssp1__exch_byte(0x49);
+  ssp1__exch_byte(0x49);
+  ssp1__exch_byte(0x3A);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_H() {
+  ssp1__exch_byte(0x7F);
+  ssp1__exch_byte(0x08);
+  ssp1__exch_byte(0x08);
+  ssp1__exch_byte(0x08);
+  ssp1__exch_byte(0x7F);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_I() {
+  ssp1__exch_byte(0x41);
+  ssp1__exch_byte(0x41);
+  ssp1__exch_byte(0x7F);
+  ssp1__exch_byte(0x41);
+  ssp1__exch_byte(0x41);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_J() {
+  ssp1__exch_byte(0x20);
+  ssp1__exch_byte(0x40);
+  ssp1__exch_byte(0x41);
+  ssp1__exch_byte(0x3F);
+  ssp1__exch_byte(0x01);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_K() {
+  ssp1__exch_byte(0x7f);
+  ssp1__exch_byte(0x08);
+  ssp1__exch_byte(0x14);
+  ssp1__exch_byte(0x22);
+  ssp1__exch_byte(0x41);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_L() {
+  ssp1__exch_byte(0x7f);
+  ssp1__exch_byte(0x40);
+  ssp1__exch_byte(0x40);
+  ssp1__exch_byte(0x40);
+  ssp1__exch_byte(0x40);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_M() {
+  ssp1__exch_byte(0x7F);
+  ssp1__exch_byte(0x02);
+  ssp1__exch_byte(0x0C);
+  ssp1__exch_byte(0x02);
+  ssp1__exch_byte(0x7F);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_N() {
+  ssp1__exch_byte(0x7f);
+  ssp1__exch_byte(0x02);
+  ssp1__exch_byte(0x04);
+  ssp1__exch_byte(0x08);
+  ssp1__exch_byte(0x7f);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_O() {
+  ssp1__exch_byte(0x3e);
+  ssp1__exch_byte(0x41);
+  ssp1__exch_byte(0x41);
+  ssp1__exch_byte(0x41);
+  ssp1__exch_byte(0x3e);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_P() {
+  ssp1__exch_byte(0x7F);
+  ssp1__exch_byte(0x09);
+  ssp1__exch_byte(0x09);
+  ssp1__exch_byte(0x09);
+  ssp1__exch_byte(0x06);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_Q() {
+  ssp1__exch_byte(0x3E);
+  ssp1__exch_byte(0x41);
+  ssp1__exch_byte(0x51);
+  ssp1__exch_byte(0x21);
+  ssp1__exch_byte(0x5E);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_R() {
+  ssp1__exch_byte(0x7F);
+  ssp1__exch_byte(0x09);
+  ssp1__exch_byte(0x19);
+  ssp1__exch_byte(0x29);
+  ssp1__exch_byte(0x46);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_S() {
+  ssp1__exch_byte(0x26);
+  ssp1__exch_byte(0x49);
+  ssp1__exch_byte(0x49);
+  ssp1__exch_byte(0x49);
+  ssp1__exch_byte(0x32);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_T() {
+  ssp1__exch_byte(0x01);
+  ssp1__exch_byte(0x01);
+  ssp1__exch_byte(0x7F);
+  ssp1__exch_byte(0x01);
+  ssp1__exch_byte(0x01);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_U() {
+  ssp1__exch_byte(0x3F);
+  ssp1__exch_byte(0x40);
+  ssp1__exch_byte(0x40);
+  ssp1__exch_byte(0x40);
+  ssp1__exch_byte(0x3F);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_V() {
+  ssp1__exch_byte(0x1F);
+  ssp1__exch_byte(0x20);
+  ssp1__exch_byte(0x40);
+  ssp1__exch_byte(0x20);
+  ssp1__exch_byte(0x1F);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_W() {
+  ssp1__exch_byte(0x3F);
+  ssp1__exch_byte(0x40);
+  ssp1__exch_byte(0x38);
+  ssp1__exch_byte(0x40);
+  ssp1__exch_byte(0x3F);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_X() {
+  ssp1__exch_byte(0x63);
+  ssp1__exch_byte(0x14);
+  ssp1__exch_byte(0x08);
+  ssp1__exch_byte(0x14);
+  ssp1__exch_byte(0x63);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_Y() {
+  ssp1__exch_byte(0x07);
+  ssp1__exch_byte(0x08);
+  ssp1__exch_byte(0x70);
+  ssp1__exch_byte(0x08);
+  ssp1__exch_byte(0x07);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_Z() {
+  ssp1__exch_byte(0x61);
+  ssp1__exch_byte(0x51);
+  ssp1__exch_byte(0x49);
+  ssp1__exch_byte(0x45);
+  ssp1__exch_byte(0x43);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_a() {
+  ssp1__exch_byte(0x20);
+  ssp1__exch_byte(0x54);
+  ssp1__exch_byte(0x54);
+  ssp1__exch_byte(0x54);
+  ssp1__exch_byte(0x78);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_b() {
+  ssp1__exch_byte(0x7F);
+  ssp1__exch_byte(0x44);
+  ssp1__exch_byte(0x44);
+  ssp1__exch_byte(0x44);
+  ssp1__exch_byte(0x38);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_c() {
+  ssp1__exch_byte(0x38);
+  ssp1__exch_byte(0x44);
+  ssp1__exch_byte(0x44);
+  ssp1__exch_byte(0x44);
+  ssp1__exch_byte(0x44);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_d() {
+  ssp1__exch_byte(0x38);
+  ssp1__exch_byte(0x44);
+  ssp1__exch_byte(0x44);
+  ssp1__exch_byte(0x44);
+  ssp1__exch_byte(0x7F);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_e() {
+  ssp1__exch_byte(0x38);
+  ssp1__exch_byte(0x54);
+  ssp1__exch_byte(0x54);
+  ssp1__exch_byte(0x54);
+  ssp1__exch_byte(0x18);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_f() {
+  ssp1__exch_byte(0x08);
+  ssp1__exch_byte(0x7E);
+  ssp1__exch_byte(0x09);
+  ssp1__exch_byte(0x01);
+  ssp1__exch_byte(0x02);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_g() {
+  ssp1__exch_byte(0x18);
+  ssp1__exch_byte(0xA4);
+  ssp1__exch_byte(0xA4);
+  ssp1__exch_byte(0xA4);
+  ssp1__exch_byte(0x7C);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_h() {
+  ssp1__exch_byte(0x7F);
+  ssp1__exch_byte(0x08);
+  ssp1__exch_byte(0x04);
+  ssp1__exch_byte(0x04);
+  ssp1__exch_byte(0x78);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_i() {
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x44);
+  ssp1__exch_byte(0x7D);
+  ssp1__exch_byte(0x40);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_j() {
+  ssp1__exch_byte(0x40);
+  ssp1__exch_byte(0x80);
+  ssp1__exch_byte(0x80);
+  ssp1__exch_byte(0x84);
+  ssp1__exch_byte(0x7D);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_k() {
+  ssp1__exch_byte(0x7F);
+  ssp1__exch_byte(0x10);
+  ssp1__exch_byte(0x28);
+  ssp1__exch_byte(0x44);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_l() {
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x41);
+  ssp1__exch_byte(0x7F);
+  ssp1__exch_byte(0x40);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_m() {
+  ssp1__exch_byte(0x7C);
+  ssp1__exch_byte(0x04);
+  ssp1__exch_byte(0x18);
+  ssp1__exch_byte(0x04);
+  ssp1__exch_byte(0x78);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_n() {
+  ssp1__exch_byte(0x7C);
+  ssp1__exch_byte(0x08);
+  ssp1__exch_byte(0x04);
+  ssp1__exch_byte(0x04);
+  ssp1__exch_byte(0x78);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_o() {
+  ssp1__exch_byte(0x38);
+  ssp1__exch_byte(0x44);
+  ssp1__exch_byte(0x44);
+  ssp1__exch_byte(0x44);
+  ssp1__exch_byte(0x38);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_p() {
+  ssp1__exch_byte(0xFC);
+  ssp1__exch_byte(0x24);
+  ssp1__exch_byte(0x24);
+  ssp1__exch_byte(0x24);
+  ssp1__exch_byte(0x18);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_q() {
+  ssp1__exch_byte(0x18);
+  ssp1__exch_byte(0x24);
+  ssp1__exch_byte(0x24);
+  ssp1__exch_byte(0x28);
+  ssp1__exch_byte(0xFC);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_r() {
+  ssp1__exch_byte(0x7C);
+  ssp1__exch_byte(0x08);
+  ssp1__exch_byte(0x04);
+  ssp1__exch_byte(0x04);
+  ssp1__exch_byte(0x08);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_s() {
+  ssp1__exch_byte(0x48);
+  ssp1__exch_byte(0x54);
+  ssp1__exch_byte(0x54);
+  ssp1__exch_byte(0x54);
+  ssp1__exch_byte(0x20);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_t() {
+  ssp1__exch_byte(0x04);
+  ssp1__exch_byte(0x3E);
+  ssp1__exch_byte(0x44);
+  ssp1__exch_byte(0x40);
+  ssp1__exch_byte(0x20);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_u() {
+  ssp1__exch_byte(0x3C);
+  ssp1__exch_byte(0x40);
+  ssp1__exch_byte(0x40);
+  ssp1__exch_byte(0x20);
+  ssp1__exch_byte(0x7C);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_v() {
+  ssp1__exch_byte(0x1C);
+  ssp1__exch_byte(0x20);
+  ssp1__exch_byte(0x40);
+  ssp1__exch_byte(0x20);
+  ssp1__exch_byte(0x1C);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+
+void char_w() {
+  ssp1__exch_byte(0x3c);
+  ssp1__exch_byte(0x40);
+  ssp1__exch_byte(0x30);
+  ssp1__exch_byte(0x40);
+  ssp1__exch_byte(0x3C);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_x() {
+  ssp1__exch_byte(0x44);
+  ssp1__exch_byte(0x28);
+  ssp1__exch_byte(0x10);
+  ssp1__exch_byte(0x28);
+  ssp1__exch_byte(0x44);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_y() {
+  ssp1__exch_byte(0x9C);
+  ssp1__exch_byte(0xA0);
+  ssp1__exch_byte(0xA0);
+  ssp1__exch_byte(0xA0);
+  ssp1__exch_byte(0x7C);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+void char_z() {
+  ssp1__exch_byte(0x44);
+  ssp1__exch_byte(0x64);
+  ssp1__exch_byte(0x54);
+  ssp1__exch_byte(0x4C);
+  ssp1__exch_byte(0x44);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+  ssp1__exch_byte(0x00);
+}
+/* Danish's */
+//
 void char_0() {
   ssp1__exch_byte(0b00111110);
   ssp1__exch_byte(0b01010001);
@@ -598,6 +1158,60 @@ void char_dollar() {
 /* ---------------End Lookup Table--------------*/
 // clang-format on
 void setup_lookuptable_OLED() {
+  callback_OLED[(int)'A'] = char_A;
+  callback_OLED[(int)'B'] = char_B;
+  callback_OLED[(int)'C'] = char_C;
+  callback_OLED[(int)'D'] = char_D;
+  callback_OLED[(int)'E'] = char_E;
+  callback_OLED[(int)'F'] = char_F;
+  callback_OLED[(int)'G'] = char_G;
+  callback_OLED[(int)'H'] = char_H;
+  callback_OLED[(int)'I'] = char_I;
+  callback_OLED[(int)'J'] = char_J;
+  callback_OLED[(int)'K'] = char_K;
+  callback_OLED[(int)'L'] = char_L;
+  callback_OLED[(int)'M'] = char_M;
+  callback_OLED[(int)'N'] = char_N;
+  callback_OLED[(int)'O'] = char_O;
+  callback_OLED[(int)'P'] = char_P;
+  callback_OLED[(int)'P'] = char_P;
+  callback_OLED[(int)'Q'] = char_Q;
+  callback_OLED[(int)'R'] = char_R;
+  callback_OLED[(int)'S'] = char_S;
+  callback_OLED[(int)'T'] = char_T;
+  callback_OLED[(int)'U'] = char_U;
+  callback_OLED[(int)'V'] = char_V;
+  callback_OLED[(int)'W'] = char_W;
+  callback_OLED[(int)'X'] = char_X;
+  callback_OLED[(int)'Y'] = char_Y;
+  callback_OLED[(int)'Z'] = char_Z;
+  callback_OLED[(int)'a'] = char_a;
+  callback_OLED[(int)'b'] = char_b;
+  callback_OLED[(int)'c'] = char_c;
+  callback_OLED[(int)'d'] = char_d;
+  callback_OLED[(int)'e'] = char_e;
+  callback_OLED[(int)'f'] = char_f;
+  callback_OLED[(int)'g'] = char_g;
+  callback_OLED[(int)'h'] = char_h;
+  callback_OLED[(int)'i'] = char_i;
+  callback_OLED[(int)'j'] = char_j;
+  callback_OLED[(int)'k'] = char_k;
+  callback_OLED[(int)'l'] = char_l;
+  callback_OLED[(int)'m'] = char_m;
+  callback_OLED[(int)'n'] = char_n;
+  callback_OLED[(int)'o'] = char_o;
+  callback_OLED[(int)'p'] = char_p;
+  callback_OLED[(int)'q'] = char_q;
+  callback_OLED[(int)'r'] = char_r;
+  callback_OLED[(int)'s'] = char_s;
+  callback_OLED[(int)'t'] = char_t;
+  callback_OLED[(int)'u'] = char_u;
+  callback_OLED[(int)'v'] = char_v;
+  callback_OLED[(int)'w'] = char_w;
+  callback_OLED[(int)'x'] = char_x;
+  callback_OLED[(int)'y'] = char_y;
+  callback_OLED[(int)'z'] = char_z;
+
   callback_OLED[(int)'0'] = char_0;
   callback_OLED[(int)'1'] = char_1;
   callback_OLED[(int)'2'] = char_2;
@@ -659,4 +1273,5 @@ void OLED_Start() {
   update_OLED();
 
   ds_OLED();
+  ON__FLAG = true;
 }

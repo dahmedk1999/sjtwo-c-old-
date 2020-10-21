@@ -46,6 +46,7 @@ const port_pin_s *led = (port_pin_s *)(params);
 
 // clang-format on
 static QueueHandle_t sensor_queue;
+static QueueHandle_t userinput;
 
 typedef struct {
   double sample[100];
@@ -94,6 +95,24 @@ void sensor_consumer(void *p) {
   }
 }
 
+char buffer[1];
+
+void OLED__inputreceivetask(void *p) {
+  while (1) {
+
+    scanf("%c", buffer);
+    if (xQueueSend(userinput, &buffer, 100)) {
+    }
+    vTaskDelay(100);
+  }
+}
+
+void OLED__inputwritetask(void *p) {
+  while (1) {
+    if (xQueueReceive(userinput, &buffer, portMAX_DELAY))
+      print_OLED(buffer);
+  }
+}
 /////////////////////////// MAIN ///////////////////////////
 
 void main(void) {
@@ -103,9 +122,14 @@ void main(void) {
   // xTaskCreate(sensor_producer, "producer", 2048 / sizeof(void *), NULL, 3, NULL);
   // xTaskCreate(sensor_consumer, "consumer", 2048 / sizeof(void *), NULL, 1, NULL);
   // vTaskStartScheduler();
-
+  userinput = xQueueCreate(1, sizeof(buffer));
   configure_OLED();
   OLED_Start();
-  print_OLED("01234567899876543210!@#$%^&*(){}][|><?/.,=_+-");
+  // print_OLED("01234567899876543210!@#$%^&*(){}][|><?/.,=_+-");
+
+  xTaskCreate(OLED__inputwritetask, "write input", 1024 / sizeof(void *), NULL, 2, NULL);
+  xTaskCreate(OLED__inputreceivetask, "receive input", 1024 / sizeof(void *), NULL, 2, NULL);
+
+  vTaskStartScheduler();
 }
 //////////////////////////END MAIN/////////////////////////

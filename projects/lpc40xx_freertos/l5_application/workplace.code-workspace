@@ -8,7 +8,8 @@
 		"files.associations": {
 			"atomic": "cpp",
 			"charconv": "cpp",
-			"*.mods": "c"
+			"*.mods": "c",
+			"semphr.h": "c"
 		},
 		"git.ignoreLimitWarning": true
 	}
