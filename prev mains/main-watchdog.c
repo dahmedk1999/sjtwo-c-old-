@@ -1,3 +1,6 @@
+/* 
+Group lab
+ */
 // clang-format off
 #include "FreeRTOS.h"
 #include "board_io.h"
@@ -244,41 +247,3 @@ int main(void) {
   /* This function never returns unless RTOS scheduler runs out of memory and fails */
   return 0;
 }
-
-/*
-static QueueHandle_t userinput;
-char buffer[4];
-void OLED__inputreceivetask(void *p) {
-  while (1) {
-
-    scanf("%c", buffer);
-    if (xQueueSend(userinput, &buffer, 100)) {
-    }
-    vTaskDelay(100);
-  }
-}
-
-void OLED__inputwritetask(void *p) {
-  while (1) {
-    if (xQueueReceive(userinput, &buffer, portMAX_DELAY))
-      print_OLED(buffer);
-  }
-}
-}
-/////////////////////////// MAIN ///////////////////////////
-void main(void) {
-
-  sj2_cli__init();
-
-  userinput = xQueueCreate(1, sizeof(buffer));
-  configure_OLED();
-  OLED_Start();
-  // print_OLED("01234567899876543210!@#$%^&*(){}][|><?/.,=_+-");
-
-  xTaskCreate(OLED__inputwritetask, "write input", 1024 / sizeof(void *), NULL, 2, NULL);
-  xTaskCreate(OLED__inputreceivetask, "receive input", 1024 / sizeof(void *), NULL, 2, NULL);
-
-  vTaskStartScheduler();
-}
-//////////////////////////END MAIN/////////////////////////
- */

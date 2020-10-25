@@ -274,6 +274,10 @@ static bool i2c__handle_state_machine(i2c_s *i2c) {
     I2C__STATE_MR_SLAVE_READ_NACK = 0x48,
     I2C__STATE_MR_SLAVE_ACK_SENT = 0x50,
     I2C__STATE_MR_SLAVE_NACK_SENT = 0x58,
+
+    // Slave Receiver States
+    I2C__STATE_SR_SLA_ACK = 0x60,
+    I2C__STATE_SR_SLAVE_REC_DATA = 0x80
   };
 
   bool stop_sent = false;
@@ -296,6 +300,19 @@ static bool i2c__handle_state_machine(i2c_s *i2c) {
   I2C__DEBUG_PRINTF("  HW State: 0x%02X", i2c_state);
 
   switch (i2c_state) {
+  case 0x60: // slave receiver mode, SLA+W receieved, ACK sent
+    i2c__set_ack_flag(lpc_i2c);
+    i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
+    break;
+  case 0x80: // Slave received first data byte
+    i2c->slave_address = lpc_i2c->DAT;
+    if (i2c->number_of_bytes_to_transfer > 1) {
+      i2c__set_ack_flag(lpc_i2c);
+    } else {
+      i2c__set_nack_flag(lpc_i2c);
+    }
+    i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
+    break;
   // Start condition sent, so send the device address
   case I2C__STATE_START:
     lpc_i2c->DAT = i2c__write_address(i2c->slave_address);
