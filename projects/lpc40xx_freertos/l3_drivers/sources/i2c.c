@@ -99,6 +99,7 @@ static void i2c2_isr(void) { i2c__handle_interrupt(&i2c_structs[I2C__2]); }
  *                      P U B L I C    F U N C T I O N S
  *
  ******************************************************************************/
+uint8_t slave_memory[256];
 
 void i2c__initialize(i2c_e i2c_number, uint32_t desired_i2c_bus_speed_in_hz, uint32_t peripheral_clock_hz) {
   const function__void_f isrs[] = {i2c0_isr, i2c1_isr, i2c2_isr};
@@ -146,12 +147,14 @@ void i2c__initialize(i2c_e i2c_number, uint32_t desired_i2c_bus_speed_in_hz, uin
   lpc_i2c->SCLL = ((half_clock_divider * percent_low) / 100) / 2;
 
   // Set I2C slave address to zeroes and enable I2C
-  lpc_i2c->ADR0 = lpc_i2c->ADR1 = lpc_i2c->ADR2 = lpc_i2c->ADR3 = 0;
+  lpc_i2c->ADR0 = /* lpc_i2c->ADR1 =  */lpc_i2c->ADR2 = lpc_i2c->ADR3 =
+      0; // Set to any address not being used by other peripherals
 
   // Enable I2C and the interrupt for it
-  lpc_i2c->CONSET = 0x40;
+  lpc_i2c->CONSET = 0x40; // 0x40 Enables Master Mode //0x44 enables slave receiver
   lpc_peripheral__enable_interrupt(peripheral_id, isrs[i2c_number], i2c_structs[i2c_number].rtos_isr_trace_name);
 }
+
 
 bool i2c__detect(i2c_e i2c_number, uint8_t slave_address) {
   // The I2C State machine will not continue after 1st state when length is set to 0
@@ -276,8 +279,8 @@ static bool i2c__handle_state_machine(i2c_s *i2c) {
     I2C__STATE_MR_SLAVE_NACK_SENT = 0x58,
 
     // Slave Receiver States
-    I2C__STATE_SR_SLA_ACK = 0x60,
-    I2C__STATE_SR_SLAVE_REC_DATA = 0x80
+    // I2C__STATE_SR_SLA_ACK = 0x60,
+    // I2C__STATE_SR_SLAVE_REC_DATA = 0x80
   };
 
   bool stop_sent = false;
@@ -300,19 +303,7 @@ static bool i2c__handle_state_machine(i2c_s *i2c) {
   I2C__DEBUG_PRINTF("  HW State: 0x%02X", i2c_state);
 
   switch (i2c_state) {
-  case 0x60: // slave receiver mode, SLA+W receieved, ACK sent
-    i2c__set_ack_flag(lpc_i2c);
-    i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
-    break;
-  case 0x80: // Slave received first data byte
-    i2c->slave_address = lpc_i2c->DAT;
-    if (i2c->number_of_bytes_to_transfer > 1) {
-      i2c__set_ack_flag(lpc_i2c);
-    } else {
-      i2c__set_nack_flag(lpc_i2c);
-    }
-    i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
-    break;
+
   // Start condition sent, so send the device address
   case I2C__STATE_START:
     lpc_i2c->DAT = i2c__write_address(i2c->slave_address);
@@ -397,6 +388,20 @@ static bool i2c__handle_state_machine(i2c_s *i2c) {
     // We should not issue stop() in this condition, but we still need to end our  transaction.
     stop_sent = true;
     i2c->error_code = lpc_i2c->STAT;
+    break;
+
+  case 0x60: // slave receiver mode, SLA+Write receieved, ACK sent
+    i2c__set_ack_flag(lpc_i2c);
+    i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
+    break;
+  case 0x80: // Slave received first data byte
+    i2c->registers->ADR0 = lpc_i2c->DAT;
+    if (i2c->number_of_bytes_to_transfer > 1) {
+      i2c__set_ack_flag(lpc_i2c);
+    } else {
+      i2c__set_nack_flag(lpc_i2c);
+    }
+    i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
     break;
 
   case I2C__STATE_MT_SLAVE_ADDR_NACK: // no break

@@ -9,7 +9,15 @@
 			"atomic": "cpp",
 			"charconv": "cpp",
 			"*.mods": "c",
-			"semphr.h": "c"
+			"semphr.h": "c",
+			"*.def": "c",
+			"bitset": "c",
+			"cstddef": "cpp",
+			"limits": "cpp",
+			"type_traits": "cpp",
+			"vector": "cpp",
+			"list": "cpp",
+			"string": "cpp"
 		},
 		"git.ignoreLimitWarning": true
 	}
