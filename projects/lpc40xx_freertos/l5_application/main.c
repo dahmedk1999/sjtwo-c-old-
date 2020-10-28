@@ -29,6 +29,8 @@
 #include "ff.h"
 
 #include "i2c.h"
+//#include "i2c_slave_init.h"
+
 /*
 // LPC_GPIO0 - LPC_GPIO4    Ports
 // CLR -> LOW 1
@@ -71,18 +73,20 @@ void OLED__inputwritetask(void *p) {
 }
 /////////////////////////// MAIN ///////////////////////////
 void main(void) {
+  printf("\n\n\n\nSeparate I2C debug\n\n\n\n#############################################################################################################"
+         "##################");
   // i2c__initialize(I2C__2, UINT32_C(400) * 1000, clock__get_peripheral_clock_hz());
   // i2c_Slave_initialize(I2C__0, UINT32_C(400) * 1000, clock__get_peripheral_clock_hz());
-  gpio__construct_with_function(GPIO__PORT_0, 10,GPIO__FUNCTION_2);  // I2C2_SDA  //Master
-  gpio__construct_with_function(GPIO__PORT_0, 11,GPIO__FUNCTION_2);  // I2C2_SCL  //
+  gpio__construct_with_function(GPIO__PORT_0, 10, GPIO__FUNCTION_2); // I2C2_SDA  //Master
+  gpio__construct_with_function(GPIO__PORT_0, 11, GPIO__FUNCTION_2); // I2C2_SCL  //
   gpio__construct_with_function(GPIO__PORT_0, 0, GPIO__FUNCTION_3);  // I2C1_SDA  //Slave
   gpio__construct_with_function(GPIO__PORT_0, 1, GPIO__FUNCTION_3);  // I2C1_SCL  //
 
-  const uint32_t i2c_speed_hz = UINT32_C(400) * 1000;
-  i2c_Slave_initialize(I2C__1, i2c_speed_hz, clock__get_peripheral_clock_hz());
+  // const uint32_t i2c_speed_hz = UINT32_C(400) * 1000;
+  // i2c_slave_initialize(I2C__1, i2c_speed_hz, 96000000);
 
   sj2_cli__init();
-
+  // i2c__detect(I2C__1, 0x14);
   vTaskStartScheduler();
 }
 //////////////////////////END MAIN/////////////////////////
