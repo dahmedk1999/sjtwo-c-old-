@@ -71,10 +71,12 @@ void OLED__inputwritetask(void *p) {
       print_OLED(buffer);
   }
 }
+
 /////////////////////////// MAIN ///////////////////////////
 void main(void) {
-  printf("\n\n\n\nSeparate I2C debug\n\n\n\n#############################################################################################################"
-         "##################");
+  printf(
+      "#########################################################################################\n\n\n\nSeparate I2C "
+      "debug\n\n\n\n#########################################################################################");
   // i2c__initialize(I2C__2, UINT32_C(400) * 1000, clock__get_peripheral_clock_hz());
   // i2c_Slave_initialize(I2C__0, UINT32_C(400) * 1000, clock__get_peripheral_clock_hz());
   gpio__construct_with_function(GPIO__PORT_0, 10, GPIO__FUNCTION_2); // I2C2_SDA  //Master

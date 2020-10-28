@@ -9,7 +9,7 @@
 #include "lpc_peripherals.h"
 
 /// Set to non-zero to enable debugging, and then you can use I2C__DEBUG_PRINTF()
-#define I2C__ENABLE_DEBUGGING 1
+#define I2C__ENABLE_DEBUGGING 0
 
 #if I2C__ENABLE_DEBUGGING
 #include <stdio.h>
@@ -100,6 +100,13 @@ static void i2c2_isr(void) { i2c__handle_interrupt(&i2c_structs[I2C__2]); }
  *
  ******************************************************************************/
 uint8_t slave_memory[256];
+
+void i2c1__slave_init(uint8_t slave_address_to_respond_to) {
+  LPC_I2C2->ADR1 = slave_address_to_respond_to; // Set to any address not being used by other peripherals
+
+  // Enable I2C and the interrupt for it
+  LPC_I2C2->CONSET = 0x44;
+}
 
 void i2c__initialize(i2c_e i2c_number, uint32_t desired_i2c_bus_speed_in_hz, uint32_t peripheral_clock_hz) {
   const function__void_f isrs[] = {i2c0_isr, i2c1_isr, i2c2_isr};
