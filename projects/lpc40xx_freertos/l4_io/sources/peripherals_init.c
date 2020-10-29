@@ -30,11 +30,9 @@ void peripherals_init(void) {
   const char *line = "--------------------------------------------------------------------------------";
   printf("\n%s\n%s(): Low level startup\n%s\n", line, __FUNCTION__, mount_info);
 
+  //  i2c1__slave_init(0x14);
   // peripherals_init__i2c_SLAVE_init();
   peripherals_init__i2c_init();
-  i2c1__slave_init(0x14);
-  if (i2c__detect(I2C__2, 0x14))
-    printf("I2C1 slave detected at address: 0x%02X\n", 0x14);
 }
 
 static void peripherals_init__startup_sequence(void) {

@@ -1,12 +1,9 @@
-// #include "i2c_slave_init.h"
-// #include "FreeRTOS.h"
-// #include "i2c.h"
-// #include "semphr.h"
-// #include "task.h"
+#include "i2c_slave_init.h"
 
-// #include "common_macros.h"
-// #include "lpc40xx.h"
-// #include "lpc_peripherals.h"
+void i2c2__slave_init(uint8_t slave_address) {
+  LPC_I2C1->ADR1 |= (slave_address >> 0);
+  LPC_I2C1->CONSET = 0x44;
+}
 
 // #define I2C__ENABLE_DEBUGGING 0
 
