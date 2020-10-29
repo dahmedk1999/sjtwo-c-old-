@@ -29,7 +29,7 @@
 #include "ff.h"
 
 #include "i2c.h"
-//#include "i2c_slave_init.h"
+#include "i2c_slave_init.h"
 
 /*
 // LPC_GPIO0 - LPC_GPIO4    Ports
@@ -53,42 +53,45 @@ const port_pin_s *led = (port_pin_s *)(params);
 
 // clang-format on
 
-static QueueHandle_t userinput;
-char buffer[4];
-void OLED__inputreceivetask(void *p) {
-  while (1) {
+// static QueueHandle_t userinput;
+// char buffer[4];
+// void OLED__inputreceivetask(void *p) {
+//   while (1) {
 
-    scanf("%c", buffer);
-    if (xQueueSend(userinput, &buffer, 100)) {
-    }
-    vTaskDelay(100);
-  }
-}
+//     scanf("%c", buffer);
+//     if (xQueueSend(userinput, &buffer, 100)) {
+//     }
+//     vTaskDelay(100);
+//   }
+// }
 
-void OLED__inputwritetask(void *p) {
-  while (1) {
-    if (xQueueReceive(userinput, &buffer, portMAX_DELAY))
-      print_OLED(buffer);
-  }
-}
+// void OLED__inputwritetask(void *p) {
+//   while (1) {
+//     if (xQueueReceive(userinput, &buffer, portMAX_DELAY))
+//       print_OLED(buffer);
+//   }
+// }
 
 /////////////////////////// MAIN ///////////////////////////
+void slave_i2c_starter(){
+  LPC_IOCON->P0_0 |= 1<<10; //set to open drain mode
+  LPC_IOCON->P0_1 |= 1<<10;
+  gpio__construct_with_function(GPIO__PORT_0, 0, GPIO__FUNCTION_3);  // I2C1_SDA  //Slave
+  gpio__construct_with_function(GPIO__PORT_0, 1, GPIO__FUNCTION_3);  // I2C1_SCL  //
+
+  i2c__initialize(I2C__1,400000,96000000);//initialize slave as master first
+  i2c2__slave_init(0x14);//turn I2c1 into slave, ADR1 set, CONSET 0x44 
+
+if(i2c__detect(I2C__2,0x14))
+  printf("Found slave self at 0x14");
+
+}
 void main(void) {
   printf(
       "#########################################################################################\n\n\n\nSeparate I2C "
       "debug\n\n\n\n#########################################################################################");
-  // i2c__initialize(I2C__2, UINT32_C(400) * 1000, clock__get_peripheral_clock_hz());
-  // i2c_Slave_initialize(I2C__0, UINT32_C(400) * 1000, clock__get_peripheral_clock_hz());
-  gpio__construct_with_function(GPIO__PORT_0, 10, GPIO__FUNCTION_2); // I2C2_SDA  //Master
-  gpio__construct_with_function(GPIO__PORT_0, 11, GPIO__FUNCTION_2); // I2C2_SCL  //
-  gpio__construct_with_function(GPIO__PORT_0, 0, GPIO__FUNCTION_3);  // I2C1_SDA  //Slave
-  gpio__construct_with_function(GPIO__PORT_0, 1, GPIO__FUNCTION_3);  // I2C1_SCL  //
-
-  // const uint32_t i2c_speed_hz = UINT32_C(400) * 1000;
-  // i2c_slave_initialize(I2C__1, i2c_speed_hz, 96000000);
-
   sj2_cli__init();
-  // i2c__detect(I2C__1, 0x14);
+  slave_i2c_starter();
   vTaskStartScheduler();
 }
 //////////////////////////END MAIN/////////////////////////

@@ -154,7 +154,6 @@ void i2c__initialize(i2c_e i2c_number, uint32_t desired_i2c_bus_speed_in_hz, uin
   lpc_peripheral__enable_interrupt(peripheral_id, isrs[i2c_number], i2c_structs[i2c_number].rtos_isr_trace_name);
 }
 
-
 bool i2c__detect(i2c_e i2c_number, uint8_t slave_address) {
   // The I2C State machine will not continue after 1st state when length is set to 0
   const size_t zero_bytes = 0;

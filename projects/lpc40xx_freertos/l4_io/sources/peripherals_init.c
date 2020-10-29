@@ -30,7 +30,6 @@ void peripherals_init(void) {
   const char *line = "--------------------------------------------------------------------------------";
   printf("\n%s\n%s(): Low level startup\n%s\n", line, __FUNCTION__, mount_info);
 
-
   peripherals_init__i2c_init();
 }
 
@@ -94,4 +93,3 @@ static void peripherals_init__i2c_init(void) {
     }
   }
 }
-

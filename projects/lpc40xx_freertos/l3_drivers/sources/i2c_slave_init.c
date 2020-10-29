@@ -1,7 +1,7 @@
 #include "i2c_slave_init.h"
 
-void i2c2__slave_init(uint8_t slave_address) {
-  LPC_I2C1->ADR1 |= (slave_address >> 0);
+void i2c2__slave_init(uint8_t sel_slave_address) {
+  LPC_I2C1->ADR1 |= (sel_slave_address >> 0);
   LPC_I2C1->CONSET = 0x44;
 }
 
