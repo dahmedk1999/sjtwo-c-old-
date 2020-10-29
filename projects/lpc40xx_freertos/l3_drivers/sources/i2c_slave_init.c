@@ -5,94 +5,22 @@ void i2c2__slave_init(uint8_t sel_slave_address) {
   LPC_I2C1->CONSET = 0x44;
 }
 
-// #define I2C__ENABLE_DEBUGGING 0
+bool i2c_slave_callback__read_memory(uint8_t memory_index, uint8_t *memory) {
+  if (memory_index < 256) {
+    *memory = slave_memory[memory_index];
+    return 1;
+  } else {
+    perror("mem_index_out_of_range");
+    return 0;
+  }
+}
 
-// #if I2C__ENABLE_DEBUGGING
-// #include <stdio.h>
-// #define I2C__DEBUG_PRINTF(f_, ...) \
-//   do { \
-//     fprintf(stderr, "I2C:"); \
-//     fprintf(stderr, (f_), ##__VA_ARGS__); \
-//     fprintf(stderr, "\n"); \
-//   } while (0)
-// #else
-// #define I2C__DEBUG_PRINTF(f_, ...) /* NOOP */
-// #endif
-
-// /**
-//  * Data structure for each I2C peripheral
-//  */
-// typedef struct {
-//   LPC_I2C_TypeDef *const registers; ///< LPC memory mapped registers for the I2C bus
-//   const char *rtos_isr_trace_name;
-
-//   // Transfer complete signal informs us when I2C state machine driven by ISR has finished
-//   SemaphoreHandle_t transfer_complete_signal;
-
-//   // Mutex to ensure only one transaction is performed at a time
-//   SemaphoreHandle_t mutex;
-
-//   // These are the parameters we save before a transaction is started
-//   uint8_t error_code;
-//   uint8_t slave_address;
-//   uint8_t starting_slave_memory_address;
-
-//   uint8_t *input_byte_pointer;        ///< Used for reading I2C slave device
-//   const uint8_t *output_byte_pointer; ///< Used for writing data to the I2C slave device
-//   size_t number_of_bytes_to_transfer;
-// } i2c_s;
-
-// /// Instances of structs for each I2C peripheral
-// static i2c_s i2c_structs[] = {
-//     {LPC_I2C0, "i2c0"},
-//     {LPC_I2C1, "i2c1"},
-//     {LPC_I2C2, "i2c2"},
-// };
-// static bool i2c__handleslave_state_machine(i2c_s *i2c);
-
-// void i2c_Slave_initialize(i2c_e i2c_number, uint32_t desired_i2c_bus_speed_in_hz, uint32_t peripheral_clock_hz) {
-//   i2c_s *i2c = &i2c_structs[i2c_number];
-//   LPC_I2C_TypeDef *lpc_i2c = i2c->registers;
-//   const lpc_peripheral_e peripheral_id = peripheral_ids[i2c_number];
-
-//   // Create binary semaphore and mutex. We deliberately use non static memory
-//   // allocation because we do not want to statically define memory for all I2C buses
-//   i2c->transfer_complete_signal = xSemaphoreCreateBinary();
-//   i2c->mutex = xSemaphoreCreateMutex();
-//   vTraceSetMutexName(i2c->mutex, "i2c_Slave_mutex");
-
-//   // Optional: Provide names of the FreeRTOS objects for the Trace Facility
-//   // vTraceSetMutexName(mI2CMutex, "I2C Mutex");
-//   // vTraceSetSemaphoreName(mTransferCompleteSignal, "I2C Finish Sem");
-
-//   lpc_peripheral__turn_on_power_to(peripheral_id);
-//   lpc_i2c->CONCLR = 0x6C; // Clear ALL I2C Flags
-
-//   /**
-//    * Per I2C high speed mode:
-//    * HS mode master devices generate a serial clock signal with a HIGH to LOW ratio of 1 to 2.
-//    * So to be able to optimize speed, we use different duty cycle for high/low
-//    *
-//    * Compute the I2C clock dividers.
-//    * The LOW period can be longer than the HIGH period because the rise time
-//    * of SDA/SCL is an RC curve, whereas the fall time is a sharper curve.
-//    */
-//   const uint32_t percent_high = 40;
-//   const uint32_t percent_low = (100 - percent_high);
-//   const uint32_t max_speed_hz = UINT32_C(1) * 1000 * 1000;
-//   const uint32_t ideal_speed_hz = UINT32_C(100) * 1000;
-//   const uint32_t freq_hz = (desired_i2c_bus_speed_in_hz > max_speed_hz) ? ideal_speed_hz :
-//   desired_i2c_bus_speed_in_hz; const uint32_t half_clock_divider = (peripheral_clock_hz / freq_hz) / 2;
-
-//   // Each clock phase contributes to 50%
-//   lpc_i2c->SCLH = ((half_clock_divider * percent_high) / 100) / 2;
-//   lpc_i2c->SCLL = ((half_clock_divider * percent_low) / 100) / 2;
-
-//   // Set I2C slave address to zeroes and enable I2C
-//   /* lpc_i2c->ADR0 =  */ lpc_i2c->ADR1 =
-//       /* lpc_i2c->ADR2 = lpc_i2c->ADR3 = */ 0x94; // Even addresses only. Write = 0. read = 1
-
-//   // Enable I2C and the interrupt for it
-//   lpc_i2c->CONSET = 0x44; // 0x40 Enables Master Mode //0x44 enables slave receiver
-//   lpc_peripheral__enable_interrupt(peripheral_id, isrs[i2c_number], i2c_structs[i2c_number].rtos_isr_trace_name);
-// }
+bool i2c_slave_callback__write_memory(uint8_t memory_index, uint8_t memory_value) {
+  if (memory_index < 256) {
+    slave_memory[memory_index] = memory_value;
+    return 1;
+  } else {
+    perror("mem_index_out_of_range");
+    return 0;
+  }
+}

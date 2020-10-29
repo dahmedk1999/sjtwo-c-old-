@@ -1,13 +1,13 @@
 #include "i2c.h"
 
 #include "FreeRTOS.h"
-#include "semphr.h"
-#include "task.h"
-
 #include "common_macros.h"
+#include "i2c_slave_init.h"
 #include "lpc40xx.h"
 #include "lpc_peripherals.h"
-
+#include "semphr.h"
+#include "stdbool.h"
+#include "task.h"
 /// Set to non-zero to enable debugging, and then you can use I2C__DEBUG_PRINTF()
 #define I2C__ENABLE_DEBUGGING 0
 
@@ -35,7 +35,9 @@ typedef struct {
 
   // Mutex to ensure only one transaction is performed at a time
   SemaphoreHandle_t mutex;
-
+  // Parameters for slave transactions
+  bool DnotA; // First byte always address. set to high after receiving address
+  uint8_t register_address;
   // These are the parameters we save before a transaction is started
   uint8_t error_code;
   uint8_t slave_address;
@@ -277,8 +279,19 @@ static bool i2c__handle_state_machine(i2c_s *i2c) {
     I2C__STATE_MR_SLAVE_NACK_SENT = 0x58,
 
     // Slave Receiver States
-    // I2C__STATE_SR_SLA_ACK = 0x60,
-    // I2C__STATE_SR_SLAVE_REC_DATA = 0x80
+    I2C__STATE_SR_SLA_ACK = 0x60,
+    // I2C__STATE_SR_SLA_NACK = 0x68,
+    I2C__STATE_SR_DATA_ACK = 0x80,
+    // I2C__STATE_SR_DATA_NACK = 0x88,
+    I2C__STATE_SR_NACK_RET = 0xA0,
+    // I2C__STATE_SR_SLA_NACK = 0x68,
+    // I2C__STATE_SR_SLA_NACK = 0x68,
+
+    // Slave Transmitter States
+    I2C__STATE_ST_SLAVE_READ_ACK = 0xA8,
+    I2C__STATE_ST_SLAVE_READ_NACK = 0xB8,
+    I2C__STATE_ST_SLAVE_NACK_SENT = 0xC0,
+    I2C__STATE_ST_SLAVE_ACK_SENT = 0xC8
   };
 
   bool stop_sent = false;
@@ -387,18 +400,44 @@ static bool i2c__handle_state_machine(i2c_s *i2c) {
     stop_sent = true;
     i2c->error_code = lpc_i2c->STAT;
     break;
+    /* ########################## Slave states begin here ############################### */
+    /* Slave Receiver */
 
-  case 0x60: // slave receiver mode, SLA+Write receieved, ACK sent
+  case I2C__STATE_SR_SLA_ACK: // slave receiver mode, SLA+Write receieved, ACK sent
     i2c__set_ack_flag(lpc_i2c);
     i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
+    i2c->DnotA = false;
     break;
-  case 0x80: // Slave received first data byte
-    i2c->registers->ADR0 = lpc_i2c->DAT;
-    if (i2c->number_of_bytes_to_transfer > 1) {
-      i2c__set_ack_flag(lpc_i2c);
+
+  case I2C__STATE_SR_DATA_ACK: // Slave received first byte
+    if (!i2c->DnotA) {
+      i2c->register_address = lpc_i2c->DAT;
+      i2c->DnotA = true;
     } else {
-      i2c__set_nack_flag(lpc_i2c);
+      i2c_slave_callback__write_memory(i2c->register_address++, lpc_i2c->DAT);
     }
+    i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
+    break;
+
+  case I2C__STATE_SR_NACK_RET:
+    i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
+    break;
+
+  /* Slave Transmitter Credit to Bang and Phuong*/
+  case I2C__STATE_ST_SLAVE_READ_ACK:
+    i2c_slave_callback__read_memory(i2c->register_address++, &lpc_i2c->DAT);
+    i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
+    break;
+
+  case I2C__STATE_ST_SLAVE_READ_NACK:
+    i2c_slave_callback__read_memory(i2c->register_address++, &lpc_i2c->DAT);
+    i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
+    break;
+
+  case I2C__STATE_ST_SLAVE_NACK_SENT:
+    i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
+    break;
+  case I2C__STATE_ST_SLAVE_ACK_SENT:
     i2c__clear_si_flag_for_hw_to_take_next_action(lpc_i2c);
     break;
 

@@ -74,16 +74,13 @@ const port_pin_s *led = (port_pin_s *)(params);
 
 /////////////////////////// MAIN ///////////////////////////
 void slave_i2c_starter() {
-  LPC_IOCON->P0_0 |= 1 << 10; // set to open drain mode
-  LPC_IOCON->P0_1 |= 1 << 10;
+  LPC_IOCON->P0_0 |= (1 << 10); // set to open drain mode
+  LPC_IOCON->P0_1 |= (1 << 10);
   gpio__construct_with_function(GPIO__PORT_0, 0, GPIO__FUNCTION_3); // I2C1_SDA  //Slave
   gpio__construct_with_function(GPIO__PORT_0, 1, GPIO__FUNCTION_3); // I2C1_SCL  //
-  int pick_slave_adr = 0x14;
+  int pick_slave_adr = 0x42;
   i2c__initialize(I2C__1, 400000, 96000000); // initialize slave as master first
   i2c2__slave_init(pick_slave_adr);          // turn I2c1 into slave, ADR1 set, CONSET 0x44
-
-  // if (i2c__detect(I2C__2, pick_slave_adr))
-  //   printf("Found slave self at 0x14"); // wait what. this better not be a fluke
 
   /* From peripherals_init.c */
   for (unsigned slave_address = 2; slave_address <= 254; slave_address += 2) {
