@@ -73,25 +73,31 @@ const port_pin_s *led = (port_pin_s *)(params);
 // }
 
 /////////////////////////// MAIN ///////////////////////////
-void slave_i2c_starter(){
-  LPC_IOCON->P0_0 |= 1<<10; //set to open drain mode
-  LPC_IOCON->P0_1 |= 1<<10;
-  gpio__construct_with_function(GPIO__PORT_0, 0, GPIO__FUNCTION_3);  // I2C1_SDA  //Slave
-  gpio__construct_with_function(GPIO__PORT_0, 1, GPIO__FUNCTION_3);  // I2C1_SCL  //
+void slave_i2c_starter() {
+  LPC_IOCON->P0_0 |= 1 << 10; // set to open drain mode
+  LPC_IOCON->P0_1 |= 1 << 10;
+  gpio__construct_with_function(GPIO__PORT_0, 0, GPIO__FUNCTION_3); // I2C1_SDA  //Slave
+  gpio__construct_with_function(GPIO__PORT_0, 1, GPIO__FUNCTION_3); // I2C1_SCL  //
+  int pick_slave_adr = 0x14;
+  i2c__initialize(I2C__1, 400000, 96000000); // initialize slave as master first
+  i2c2__slave_init(pick_slave_adr);          // turn I2c1 into slave, ADR1 set, CONSET 0x44
 
-  i2c__initialize(I2C__1,400000,96000000);//initialize slave as master first
-  i2c2__slave_init(0x14);//turn I2c1 into slave, ADR1 set, CONSET 0x44 
+  // if (i2c__detect(I2C__2, pick_slave_adr))
+  //   printf("Found slave self at 0x14"); // wait what. this better not be a fluke
 
-if(i2c__detect(I2C__2,0x14))
-  printf("Found slave self at 0x14");
-
+  /* From peripherals_init.c */
+  for (unsigned slave_address = 2; slave_address <= 254; slave_address += 2) {
+    if (i2c__detect(I2C__2, slave_address)) {
+      printf("I2C slave detected at address: 0x%02X\n", slave_address);
+    }
+  }
 }
 void main(void) {
-  printf(
-      "#########################################################################################\n\n\n\nSeparate I2C "
-      "debug\n\n\n\n#########################################################################################");
+  printf("#########################################################################################\nSeparate I2C "
+         "debug\n#########################################################################################");
   sj2_cli__init();
   slave_i2c_starter();
+
   vTaskStartScheduler();
 }
 //////////////////////////END MAIN/////////////////////////
