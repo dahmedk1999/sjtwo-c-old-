@@ -21,6 +21,8 @@ void command_mode();
 void data_mode();
 
 void horizontal_addressing();
+void vertical_addressing();
+void horizontal_scrolling();
 
 void power_up();
 void power_down();

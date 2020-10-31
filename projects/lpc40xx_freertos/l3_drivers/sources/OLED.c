@@ -80,7 +80,27 @@ void horizontal_addressing()
   ssp1__exch_byte(0x21);ssp1__exch_byte(0x00);ssp1__exch_byte(0x7F);//column address start0-127end
   ssp1__exch_byte(0x22);ssp1__exch_byte(0x00);ssp1__exch_byte(0x07);//page address start0-7end 
 }
+void vertical_addressing()
+{
+  command_mode();
+  ssp1__exch_byte(0x20);ssp1__exch_byte(0x01);//set to vert
+  ssp1__exch_byte(0x21);ssp1__exch_byte(0x00);ssp1__exch_byte(0x7F);//Set column mode
+  ssp1__exch_byte(0x22);ssp1__exch_byte(0x00);ssp1__exch_byte(0x07);//Set page address
+}
 
+void horizontal_scrolling() {
+  cs_OLED();
+    command_mode();
+    ssp1__exch_byte(0x26);
+    ssp1__exch_byte(0x00); // dummy byte
+    ssp1__exch_byte(0x00); // start Page 0
+    ssp1__exch_byte(0x07); // 5 frames
+    ssp1__exch_byte(0x07); // end Page 7
+    ssp1__exch_byte(0x00); // dummy byte 00
+    ssp1__exch_byte(0xFF); // dummy byte FF
+    ssp1__exch_byte(0x2F); // activate scrolling
+  ds_OLED();
+}
 // clang-format off
 
 /* Using the datasheet, follow the initialization steps at page 19 */
@@ -1154,6 +1174,11 @@ void char_dollar() {
   ssp1__exch_byte(0x00);
   ssp1__exch_byte(0x00);
   ssp1__exch_byte(0x00);
+}
+void char_return() {
+  vertical_addressing();
+  char_space();
+  horizontal_addressing();
 }
 /* ---------------End Lookup Table--------------*/
 // clang-format on

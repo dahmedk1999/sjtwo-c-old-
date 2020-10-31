@@ -17,7 +17,8 @@
 			"type_traits": "cpp",
 			"vector": "cpp",
 			"list": "cpp",
-			"string": "cpp"
+			"string": "cpp",
+			"xlocmon": "c"
 		},
 		"git.ignoreLimitWarning": true
 	}

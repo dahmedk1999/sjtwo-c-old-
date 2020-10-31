@@ -9,28 +9,23 @@
 #include "task.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "time.h"
-#include "C:\sjtwo-c\projects\lpc40xx_freertos\l3_drivers\adc.h"
 #include "LPC40xx.h"
 #include "gpio.h"
 #include "gpio_isr.h"
 #include "gpio_lab.h"
 #include "lpc_peripherals.h"
-#include "pwm1.h"
 #include "queue.h"
 #include "semphr.h"
 #include "ssp2lab.h"
 #include "uart_lab.h"
 #include <string.h>
 #include "OLED.h"
-#include "acceleration.h"
-
-#include "event_groups.h"
 #include "ff.h"
 
-#include "i2c.h"
-#include "i2c_slave_init.h"
 
+
+
+//////////////////////////END MAIN/////////////////////////
 /*
 // LPC_GPIO0 - LPC_GPIO4    Ports
 // CLR -> LOW 1
@@ -53,48 +48,59 @@ const port_pin_s *led = (port_pin_s *)(params);
 
 // clang-format on
 
-// static QueueHandle_t userinput;
-// char buffer[4];
-// void OLED__inputreceivetask(void *p) {
-//   while (1) {
+static QueueHandle_t userinput;
+static QueueHandle_t display_songname;
+char buffer[16];
 
-//     scanf("%c", buffer);
-//     if (xQueueSend(userinput, &buffer, 100)) {
-//     }
-//     vTaskDelay(100);
-//   }
-// }
-
-// void OLED__inputwritetask(void *p) {
-//   while (1) {
-//     if (xQueueReceive(userinput, &buffer, portMAX_DELAY))
-//       print_OLED(buffer);
-//   }
-// }
-
-/////////////////////////// MAIN ///////////////////////////
-void slave_i2c_starter() {
-  LPC_IOCON->P0_0 |= (1 << 10); // set to open drain mode
-  LPC_IOCON->P0_1 |= (1 << 10);
-  gpio__construct_with_function(GPIO__PORT_0, 0, GPIO__FUNCTION_3); // I2C1_SDA  //Slave
-  gpio__construct_with_function(GPIO__PORT_0, 1, GPIO__FUNCTION_3); // I2C1_SCL  //
-  int pick_slave_adr = 0x42;
-  i2c__initialize(I2C__1, 400000, 96000000); // initialize slave as master first
-  i2c2__slave_init(pick_slave_adr);          // turn I2c1 into slave, ADR1 set, CONSET 0x44
-
-  /* From peripherals_init.c */
-  for (unsigned slave_address = 2; slave_address <= 254; slave_address += 2) {
-    if (i2c__detect(I2C__2, slave_address)) {
-      printf("I2C slave detected at address: 0x%02X\n", slave_address);
+void OLED__inputreceivetask(void *p) {
+  while (1) {
+    scanf("%c", buffer);
+    if (xQueueSend(userinput, &buffer, 10)) {
     }
+    vTaskDelay(100);
   }
 }
+void OLED__inputwritetask(void *p) {
+  while (1) {
+    if (xQueueReceive(userinput, &buffer, portMAX_DELAY))
+      print_OLED(buffer);
+  }
+}
+void discover_mp3_files_task(void *p) {
+  FRESULT file_result; /* Return value */
+  DIR dir_obj;         /* Directory object */
+  FILINFO file_info;   /* File information */
+
+  file_result = f_findfirst(&dir_obj, &file_info, "", "*.mp3"); /* Start to search for mp3 files */
+
+  while (file_result == FR_OK && file_info.fname[0]) { /* Repeat while an item is found */
+    printf("%s\n", file_info.fname);                   /* Print the object name */
+    if (xQueueSend(display_songname, &file_info.fname, 0))
+      file_result = f_findnext(&dir_obj, &file_info); /* Search for next item */
+  }
+  f_closedir(&dir_obj);
+  vTaskSuspend(NULL);
+}
+
+void write_songlist_to_OLED(void *p) {
+  char filename[129];
+  while (1) {
+    if (xQueueReceive(display_songname, &filename, portMAX_DELAY))
+      print_OLED(filename);
+  }
+}
+
 void main(void) {
-  printf("#########################################################################################\nSeparate I2C "
-         "debug\n#########################################################################################");
-  sj2_cli__init();
-  slave_i2c_starter();
+  display_songname = xQueueCreate(8, 129);
+  userinput = xQueueCreate(8, sizeof(buffer));
+
+  configure_OLED();
+  OLED_Start();
+  // sj2_cli__init(); //CLI EATS UP USER INPUT. DO NOT USE WITH OLED INPUT
+  xTaskCreate(OLED__inputreceivetask, "oledinput", 512, NULL, 2, NULL);
+  xTaskCreate(OLED__inputwritetask, "oledwrite", 512, NULL, 2, NULL);
+  xTaskCreate(discover_mp3_files_task, "discover", 2048, NULL, 2, NULL);
+  xTaskCreate(write_songlist_to_OLED, "writesong", 2048, NULL, 2, NULL);
 
   vTaskStartScheduler();
 }
-//////////////////////////END MAIN/////////////////////////
