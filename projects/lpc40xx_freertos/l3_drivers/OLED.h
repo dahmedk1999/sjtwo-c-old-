@@ -1,6 +1,9 @@
 #pragma once
 #include <stdint.h>
 #include <stdlib.h>
+
+typedef enum { SCROLL_LEFT = 0x26, SCROLL_RIGHT = 0x27 } SCROLLDIR;
+typedef enum { page0, page1, page2, page3, page4, page5, page6, page7 } PAGES;
 // 4 wire spi control
 // Pins D0, D1 connect to CLK and MOSI, respectively
 // Pins /CS, D/C connect to P1.22 and P1.25, respectively
@@ -22,7 +25,7 @@ void data_mode();
 
 void horizontal_addressing();
 void vertical_addressing();
-void horizontal_scrolling();
+void horizontal_scrolling(SCROLLDIR DIRECTION, PAGES pageStart, PAGES pageEnd);
 
 void power_up();
 void power_down();

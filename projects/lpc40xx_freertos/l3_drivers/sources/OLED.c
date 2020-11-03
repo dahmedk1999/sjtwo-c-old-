@@ -9,7 +9,7 @@
 #include <string.h>
 
 bool ON__FLAG=false;
-
+uint8_t cursor=0;
 // 4 wire spi control
 // Pins D0, D1 connect to CLK(P0.7) and MOSI(P0.9), respectively
 // Pins /CS, D/C connect to P1.22 and P1.25, respectively
@@ -88,14 +88,14 @@ void vertical_addressing()
   ssp1__exch_byte(0x22);ssp1__exch_byte(0x00);ssp1__exch_byte(0x07);//Set page address
 }
 
-void horizontal_scrolling() {
+void horizontal_scrolling(SCROLLDIR DIRECTION,PAGES pageStart,PAGES pageEnd) {
   cs_OLED();
     command_mode();
-    ssp1__exch_byte(0x26);
+    ssp1__exch_byte(DIRECTION);
     ssp1__exch_byte(0x00); // dummy byte
-    ssp1__exch_byte(0x00); // start Page 0
+    ssp1__exch_byte(pageStart); // start Page 0
     ssp1__exch_byte(0x07); // 5 frames
-    ssp1__exch_byte(0x07); // end Page 7
+    ssp1__exch_byte(pageEnd); // end Page 7
     ssp1__exch_byte(0x00); // dummy byte 00
     ssp1__exch_byte(0xFF); // dummy byte FF
     ssp1__exch_byte(0x2F); // activate scrolling
@@ -183,6 +183,18 @@ void print_OLED(char *toprint){
 
     for (int i = 0; i < strlen(toprint); i++) 
     {
+
+      fprintf(stderr,"\nCursor at start of for loop is: %d",cursor);
+      cursor++;//every character increments cursor. 16 chars per page
+      if(cursor>128)cursor=0;
+      if(toprint[i]=='\n')//if new line, increment cursor count until it is characters/page
+      {
+        cursor=(cursor+(16-cursor/16));
+        if(cursor>128)cursor=0;
+        fprintf(stderr,"\nCursor at \\n is: character %d, so char_return is getting %d\n",cursor,(uint8_t)(cursor/16));
+        char_return((uint8_t)(cursor/16));
+        continue;
+      }
       function_pointer_OLED handler_OLED = callback_OLED[(int)(toprint[i])];
       handler_OLED();
     }
@@ -1175,10 +1187,13 @@ void char_dollar() {
   ssp1__exch_byte(0x00);
   ssp1__exch_byte(0x00);
 }
-void char_return() {
-  vertical_addressing();
-  char_space();
-  horizontal_addressing();
+void char_return(uint8_t addr) {
+  command_mode();
+  ssp1__exch_byte(0xB0 | addr);
+  fprintf(stderr, "set column\n");
+  ssp1__exch_byte(0x10);
+  ssp1__exch_byte(0x00);
+  data_mode();
 }
 /* ---------------End Lookup Table--------------*/
 // clang-format on
@@ -1284,6 +1299,7 @@ void setup_lookuptable_OLED() {
   callback_OLED[(int)' '] = char_space;
   callback_OLED[(int)'.'] = char_period;
   callback_OLED[(int)'$'] = char_dollar;
+  callback_OLED[(int)'\n'] = char_return;
 }
 
 void OLED_Start() {
