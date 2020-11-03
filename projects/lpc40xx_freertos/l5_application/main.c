@@ -99,8 +99,8 @@ void main(void) {
   // sj2_cli__init(); //CLI EATS UP USER INPUT. DO NOT USE WITH OLED INPUT
   xTaskCreate(OLED__inputreceivetask, "oledinput", 512, NULL, 2, NULL);
   xTaskCreate(OLED__inputwritetask, "oledwrite", 512, NULL, 2, NULL);
-  xTaskCreate(discover_mp3_files_task, "discover", 2048, NULL, 2, NULL);
-  xTaskCreate(write_songlist_to_OLED, "writesong", 2048, NULL, 2, NULL);
+  // xTaskCreate(discover_mp3_files_task, "discover", 2048, NULL, 2, NULL);
+  // xTaskCreate(write_songlist_to_OLED, "writesong", 2048, NULL, 2, NULL);
 
   vTaskStartScheduler();
 }

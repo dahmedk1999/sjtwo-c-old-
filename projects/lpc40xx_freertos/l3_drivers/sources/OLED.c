@@ -180,17 +180,18 @@ void print_OLED(char *toprint){
   {
   cs_OLED();
   data_mode();
-
+  if(cursor>=128)cursor=0;
     for (int i = 0; i < strlen(toprint); i++) 
     {
-
-      fprintf(stderr,"\nCursor at start of for loop is: %d",cursor);
       cursor++;//every character increments cursor. 16 chars per page
-      if(cursor>128)cursor=0;
+      if(cursor>=128)cursor=0;
+      fprintf(stderr,"\nCursor at start of for loop is: %d",cursor);
+      
+      
       if(toprint[i]=='\n')//if new line, increment cursor count until it is characters/page
       {
-        cursor=(cursor+(16-cursor/16));
-        if(cursor>128)cursor=0;
+        cursor=(cursor+((16-(cursor%16))));
+        if(cursor>=128)cursor=0;
         fprintf(stderr,"\nCursor at \\n is: character %d, so char_return is getting %d\n",cursor,(uint8_t)(cursor/16));
         char_return((uint8_t)(cursor/16));
         continue;
