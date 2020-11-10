@@ -24,28 +24,6 @@ static void uart_task(void *params);
 uint8_t GPIOPORTs[] = {1, 1, 1, 2};
 uint8_t GPIOLEDs[] = {18, 24, 26, 3};
 
-// LPC_GPIO0 - LPC_GPIO4    Ports
-// CLR -> LOW 1
-// SET -> HIGH 1
-// &= ~(1 << 31); To Clear  (0)
-// |= (1 << 31);  To Set    (1)
-// REG & (1 << 9) To Check  (?)
-// PIN -> 1 High 0 Low
-// LEDs			 BUTTONS
-/*
-GPIO1 -18 LED 0  GPIO0 -29 Button 0
-GPIO1 -24 LED 1  GPIO0 -30 Button 1
-GPIO1 -26 LED 2  GPIO1 -15 Button 2
-GPIO2 -3  LED 3  GPIO1 -10 Button 3
-
-void foo(void) {}
-typedef void (*foo)(void);
-
- const port_pin_s *led = (port_pin_s *)(params);
-
-LPC_PINCON->PINMODE0 &= ~(0x3 << 18);		// Clear bits 18 & 19
-LPC_PINCON->PINMODE_OD0 |= (0x1 << 9);	
-*/
 
 typedef struct {
   uint8_t port;

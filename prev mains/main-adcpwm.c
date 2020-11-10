@@ -33,36 +33,16 @@ typedef struct {
   uint8_t B;
 } RGB;
 RGB globalRGB = {25, 25, 25};
+
 static SemaphoreHandle_t switch_press_indication0, switch_press_indication1, switch_press_indication2,
     switch_press_indication3;
 static QueueHandle_t adc_to_pwm_task_queue, Q1;
-
-// LPC_GPIO0 - LPC_GPIO4    Ports
-// CLR -> LOW 1
-// SET -> HIGH 1
-// &= ~(1 << 31); To Clear  (0)
-// |= (1 << 31);  To Set    (1)
-// REG & (1 << 9) To Check  (?)
-// PIN -> 1 High 0 Low
-// LEDs			 BUTTONS
-/*
-GPIO1 -18 LED 0  GPIO0 -29 Button 0
-GPIO1 -24 LED 1  GPIO0 -30 Button 1
-GPIO1 -26 LED 2  GPIO1 -15 Button 2
-GPIO2 -3  LED 3  GPIO1 -10 Button 3
-
-void foo(void) {}
-typedef void (*foo)(void);
-
- const port_pin_s *led = (port_pin_s *)(params);
-
-
-*/
 
 void port0pin29isr(void) {
   LPC_GPIOINT->IO0IntClr |= (1 << 29);
   xSemaphoreGiveFromISR(switch_press_indication0, NULL);
 }
+
 void port0pin30isr_RGB(void) {
   LPC_GPIOINT->IO0IntClr |= (1 << 30);
   globalRGB.R = rand() % 100;
@@ -209,41 +189,42 @@ void pwm_taskP2(void *p) {
     }
   }
 }
+
+
+
+
 /////////////////////////// MAIN ///////////////////////////
 int main(void) {
   srand((unsigned int)time(NULL));
   switch_press_indication0 = xSemaphoreCreateBinary();
   switch_press_indication1 = xSemaphoreCreateBinary();
-  // switch_press_indication2 = xSemaphoreCreateBinary();
-  // switch_press_indication3 = xSemaphoreCreateBinary();
-
   adc_to_pwm_task_queue = xQueueCreate(1, sizeof(int *));
-  // static port_pin_s sw = {0, 29}, sw1 = {0, 30}, sw2 = {1, 15}, sw3 = {1, 10};
-  // static port_pin_s LEDarray[4] = {{1, 18}, {1, 24}, {1, 26}, {2, 3}};
-
-  /* Led toggle switch */
-  gpioX__attach_interrupt(0, 29, GPIO_INTR__RISING_EDGE, port0pin29isr);
-  /* Random RGB on switch */
-  gpioX__attach_interrupt(0, 30, GPIO_INTR__RISING_EDGE, port0pin30isr_RGB);
-
-  /* Intr Dispatcher  */
+  /* Intr Dispatcher */
   lpc_peripheral__enable_interrupt(LPC_PERIPHERAL__GPIO, gpioX__interrupt_dispatcher, 'd');
-
-  /* Led toggle switch */
-  xTaskCreate(sleep_on_semphr_task0, "intrswitch0", 2048 / sizeof(void *), NULL, 1, NULL);
-
-  /* Random RGB on switch */
-  xTaskCreate(sleep_on_semphr_task1, "intrswitch1", 2048 / sizeof(void *), NULL, 2, NULL);
-
-  /* RGB LEDs */
-  // xTaskCreate(pwm_task, "pwmtest", 2048 / sizeof(void *), NULL, 1, NULL);
 
   /* Part 1, ADC OUTPUT */
   // xTaskCreate(adc_task, "ADC_output", 2048 / sizeof(void *), NULL, 2, NULL);
 
-  /* Part 2 Queue RGB */
+
+  /*************** onboard Led toggle switch task *****************/
+  gpioX__attach_interrupt(0, 29, GPIO_INTR__RISING_EDGE, port0pin29isr);
+  xTaskCreate(sleep_on_semphr_task0, "intrswitch0", 2048 / sizeof(void *), NULL, 1, NULL);
+ /********************************************************/
+  
+  /************* Random RGB on switch *********************/
+  gpioX__attach_interrupt(0, 30, GPIO_INTR__RISING_EDGE, port0pin30isr_RGB);
+  xTaskCreate(sleep_on_semphr_task1, "intrswitch1", 2048 / sizeof(void *), NULL, 2, NULL);
+  /********************************************************/
+  
+
+  /***************** RGB LEDs ********************/
+  // xTaskCreate(pwm_task, "pwmtest", 2048 / sizeof(void *), NULL, 1, NULL);
+  /**********************************************/
+  
+  /* Part 2 Queue RGB with ADC */
   // xTaskCreate(adc_taskP2, "ADC Producer", 2048 / sizeof(void *), NULL, 2, NULL);
   // xTaskCreate(pwm_taskP2, "Pwm Consumer", 2048 / sizeof(void *), NULL, 2, NULL);
+
   vTaskStartScheduler();
 
   return 0;
