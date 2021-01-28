@@ -23,7 +23,9 @@ Infrastructure highlights:
 
 - [Build and Flash Project](README-GETTING-STARTED.md) 
 - [Read more about SCons](README-SCons.md) to figure out how to build projects
-
+- You can use the [build.bat](build.bat) batch file to build specific projects. (Usage : ./build "projectName")
+- Similarly, you can use [flash.bat](flash.bat) to flash specific projects to the board. (Usage : ./flash "projectName")
+- The project directory must be "C:/sjtwo-c" for these to work.
 ----
 
 ## Build System
@@ -49,3 +51,4 @@ Originally, Preet created "SJ1" development board, which meant that there was on
 This is where the *SJ2-C* was born, which was completely re-designed to write simple code that everyone could understand. Many students are new to programming and it was not expected that C++ would come naturally. The code may appear less fancy, but it is simple to understand and traceable with minimal abstractions. The goal is to avoid designing yet another Arduino platform. There is no such thing as magic in the field of firmware engineering.
 
 ----
+

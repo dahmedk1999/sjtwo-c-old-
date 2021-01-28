@@ -22,27 +22,7 @@
 #include "ssp2lab.h"
 #include "uart_lab.h"
 
-// LPC_GPIO0 - LPC_GPIO4    Ports
-// CLR -> LOW 1
-// SET -> HIGH 1
-// &= ~(1 << 31); To Clear  (0)
-// |= (1 << 31);  To Set    (1)
-// REG & (1 << 9) To Check  (?)
-// PIN -> 1 High 0 Low
-// LEDs			 BUTTONS
-/*
-GPIO1 -18 LED 0  GPIO0 -29 Button 0
-GPIO1 -24 LED 1  GPIO0 -30 Button 1
-GPIO1 -26 LED 2  GPIO1 -15 Button 2
-GPIO2 -3  LED 3  GPIO1 -10 Button 3
-
-void foo(void) {}
-typedef void (*foo)(void);
-const port_pin_s *led = (port_pin_s *)(params);
-*/
-
 // clang-format on
-// UART
 void uart_read_task(void *p) {
 
   while (1) {
