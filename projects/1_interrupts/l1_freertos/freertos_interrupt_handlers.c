@@ -7,9 +7,9 @@
  * @{
  * @name declared at port.c
  */
-void xPortPendSVHandler( void );
-void xPortSysTickHandler( void );
-void vPortSVCHandler( void );
+void xPortPendSVHandler(void);
+void xPortSysTickHandler(void);
+void vPortSVCHandler(void);
 /** @} */
 
 /**

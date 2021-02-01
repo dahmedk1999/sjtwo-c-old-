@@ -98,7 +98,8 @@ static int sd_card__read_datablock(BYTE *buff, /* Data buffer to store received 
   } while (token == 0xFF);
 
   if (token != 0xFE) {
-    SD_CARD__DEBUG_PRINTF("ERROR: token not 0xFE after %i bytes (started %lu, now %lu)\n", count, time_now, SD_CARD__PLATFORM_GET_MS());
+    SD_CARD__DEBUG_PRINTF("ERROR: token not 0xFE after %i bytes (started %lu, now %lu)\n", count, time_now,
+                          SD_CARD__PLATFORM_GET_MS());
     return 0; /* If not valid data token, return with error */
   }
 
@@ -150,7 +151,7 @@ static int sd_card__transmit_datablock(const BYTE *buff, /* 512 byte data block 
     /* CRC (Dummy) */
     SD_CARD__TRANSMIT_BYTE(0xFF);
     resp = SD_CARD__RECEIVE_BYTE(); /* Reveive data response */
-    if ((resp & 0x1F) != 0x05) {      /* If not accepted, return with error */
+    if ((resp & 0x1F) != 0x05) {    /* If not accepted, return with error */
       return 0;
     }
   }
@@ -184,22 +185,22 @@ static BYTE sd_card__send_command(BYTE cmd, /* Command byte */
 
   if (cmd == CMD0) {
     n = 0x95; /* Valid CRC for CMD0(0) */
-  }
-  else if (cmd == CMD8) {
+  } else if (cmd == CMD8) {
     n = 0x87; /* Valid CRC for CMD8(0x1AA) */
   } else {
     n = 0x01; /* Dummy CRC + Stop */
   }
 
   /* Start + Command index + 32-bit arguments */
-  const uint8_t bytes_to_transmit[] = {cmd, (BYTE)(arg >> 24), (BYTE)(arg >> 16), (BYTE)(arg >> 8), (BYTE)(arg >> 0), n};
+  const uint8_t bytes_to_transmit[] = {cmd, (BYTE)(arg >> 24), (BYTE)(arg >> 16), (BYTE)(arg >> 8), (BYTE)(arg >> 0),
+                                       n};
   ssp2__dma_write_block(bytes_to_transmit, sizeof(bytes_to_transmit));
 
   /* Receive command response */
   if (cmd == CMD12) {
     SD_CARD__RECEIVE_BYTE(); /* Skip a stuff byte when stop reading */
   }
-  
+
   n = 10; /* Wait for a valid response in timeout of 10 attempts */
   do {
     res = SD_CARD__RECEIVE_BYTE();
@@ -232,7 +233,7 @@ DSTATUS sd_card__initialize() {
 
   if (sd_card__send_command(CMD0, 0) == 1) { /* Enter Idle state */
     const uint32_t timeout = SD_CARD__PLATFORM_GET_MS() + 1000;
-    if (sd_card__send_command(CMD8, 0x1AA) == 1) { /* SDHC */\
+    if (sd_card__send_command(CMD8, 0x1AA) == 1) { /* SDHC */
       SD_CARD__DEBUG_PRINTF("CMD8 succeeded...\n");
 
       for (n = 0; n < 4; n++)
@@ -317,7 +318,7 @@ DRESULT sd_card__read(BYTE *buff,   /* Pointer to the data buffer to store read 
     sector *= 512; /* Convert to byte address if needed */
   }
 
-  if (count == 1) {                                 /* Single block read */
+  if (count == 1) { /* Single block read */
     if ((sd_card__send_command(CMD17, sector) == 0)) {
       if (sd_card__read_datablock(buff, 512)) {
         count = 0;
@@ -380,7 +381,7 @@ DRESULT sd_card__write(const BYTE *buff, /* Pointer to the data to be written */
         }
         buff += 512;
       } while (--count);
-      if (!sd_card__transmit_datablock(0, 0xFD)) {/* STOP_TRAN token */
+      if (!sd_card__transmit_datablock(0, 0xFD)) { /* STOP_TRAN token */
         count = 1;
       }
     }
@@ -410,7 +411,7 @@ DRESULT sd_card__ioctl(BYTE ctrl, /* Control code */
       res = RES_OK;
       break;
 
-    case 1:                /* Sub control code == 1 (sd_card__power_on) */
+    case 1: /* Sub control code == 1 (sd_card__power_on) */
       sd_card__power_on();
       res = RES_OK;
       break;
