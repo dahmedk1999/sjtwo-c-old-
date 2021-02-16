@@ -28,6 +28,7 @@ void gpioX__set_as_output(uint8_t port, uint8_t pin_num) {
   switch (port) {
   case 0:
     LPC_GPIO0->DIR |= (1 << pin_num);
+    LPC_GPIO
     break;
   case 1:
     LPC_GPIO1->DIR |= (1 << pin_num);
